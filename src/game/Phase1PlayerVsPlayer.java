@@ -87,9 +87,26 @@ public class Phase1PlayerVsPlayer {
     }
 
     public static void announceWinner(GameSession session) {
-        Player w = session.determineWinner();
+        Player w = null;
+        int bestScore = -1;
+        int bestCount = 0;
+        for (int i = 0; i < session.players.size(); i++) {
+            Player p = session.players.get(i);
+            if (p.quit) continue;
+            if (p.totalScore > bestScore) {
+                bestScore = p.totalScore;
+                w = p;
+                bestCount = 1;
+            } else if (p.totalScore == bestScore) {
+                bestCount++;
+            }
+        }
         System.out.println();
-        System.out.println("Game ended. Winner: " + (w == null ? "NONE" : w.name));
+        if (bestCount > 1) {
+            System.out.println("Game ended. Result: TIED");
+        } else {
+            System.out.println("Game ended. Winner: " + (w == null ? "NONE" : w.name));
+        }
         for (int i = 0; i < session.players.size(); i++) {
             Player p = session.players.get(i);
             System.out.println(p.name + " score=" + p.totalScore);

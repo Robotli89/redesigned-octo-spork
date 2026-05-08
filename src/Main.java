@@ -4,7 +4,12 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        File dict = new File("src/wordlist.txt");
+        File dict = findDictionaryFile();
+        if (dict == null) {
+            System.out.println("Dictionary file not found (wordlist.txt).");
+            System.out.println("Result: all words will be INVALID and AI will always pass.");
+            dict = new File("wordlist.txt");
+        }
 
         for (;;) {
             System.out.println();
@@ -26,9 +31,33 @@ public class Main {
             else if (ch.equals("3")) game.Phase3Multiplayer.run(sc, dict);
             else if (ch.equals("4")) game.Phase4MultiplayerAI.run(sc, dict);
             else if (ch.equals("5")) game.Phase5AIvsAI.run(sc, dict);
-            else System.out.println("Invalid choice.");
+            else {
+                System.out.println("Invalid choice.");
+                continue;
+            }
+
+            System.out.print("Another round? (Y/N): ");
+            String again = sc.nextLine();
+            if (again == null) again = "";
+            again = again.trim();
+            if (!again.equalsIgnoreCase("Y")) break;
         }
 
         sc.close();
+    }
+
+    public static File findDictionaryFile() {
+        String[] candidates = new String[] {
+                "src/wordlist.txt",
+                "wordlist.txt",
+                "BoggleAssignment/redesigned-octo-spork/src/wordlist.txt",
+                "BoggleAssignment/wordlist.txt",
+                "redesigned-octo-spork/src/wordlist.txt"
+        };
+        for (int i = 0; i < candidates.length; i++) {
+            File f = new File(candidates[i]);
+            if (f.exists()) return f;
+        }
+        return null;
     }
 }

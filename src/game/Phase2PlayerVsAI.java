@@ -10,6 +10,57 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Phase2PlayerVsAI {
+    // Called when human becomes "passed" (manual PASS or auto-pass after 2 wrong).
+    // return true if game should end immediately.
+    public static boolean handleHumanPassed(Scanner sc, GameSession session) {
+        // Offer shake right away (only if shake not used yet)
+        if (!session.isShakeUpUsed()) {
+            System.out.print("Shake Up? (Y/N): ");
+            String ch = sc.nextLine();
+            if (ch == null) ch = "";
+            ch = ch.trim();
+            if (ch.equalsIgnoreCase("Y")) {
+                session.performShake();
+                return false;
+            }
+        }
+
+        // target score = 0: if someone passes and shake already used (or user said no shake),
+        // the remaining player continues until score > passer. If no words and same score => tie.
+        if (session.targetScore == 0) {
+            Player passer = session.players.get(0); // human is always index 0 here
+            Player other = session.players.get(1);  // AI is always index 1 here
+            int passScore = passer.totalScore;
+
+            int toOther = session.nextTurn();
+            if (toOther == 2) return true;
+
+            for (;;) {
+                if (other.totalScore > passScore) break;
+
+                if (session.getCurrentPlayer().isAI) {
+                    GameSession.AIResult rr = session.runAITurnIfNeeded();
+                    if (rr.passed) break;
+                } else {
+                    break;
+                }
+
+                int adv = session.nextTurn();
+                if (adv == 2) break;
+
+                // skip the passer (already passed) so other can keep trying
+                if (!session.getCurrentPlayer().isAI) {
+                    int skip = session.nextTurn();
+                    if (skip == 2) break;
+                }
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
     public static void run(Scanner sc, File dictionaryFile) {
         Phase1PlayerVsPlayer.showRules();
 
@@ -52,6 +103,12 @@ public class Phase2PlayerVsAI {
                     session.saveIfPvAIQuit(new File(human + "_save.txt"));
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
+                    boolean endNow = handleHumanPassed(sc, session);
+                    if (endNow) {
+                        Phase1PlayerVsPlayer.announceWinner(session);
+                        break;
+                    }
+                    continue;
                 } else {
                     int sr = session.submitWord(input);
                     if (sr == 1) {
@@ -60,6 +117,16 @@ public class Phase2PlayerVsAI {
                         System.out.println("Already used. 0 points.");
                     } else {
                         System.out.println("Invalid. 0 points.");
+                    }
+
+                    // If this invalid guess triggered auto-pass (2 wrong), offer shake right away.
+                    if (session.players.get(0).passed) {
+                        boolean endNow = handleHumanPassed(sc, session);
+                        if (endNow) {
+                            Phase1PlayerVsPlayer.announceWinner(session);
+                            break;
+                        }
+                        continue;
                     }
                 }
             }
