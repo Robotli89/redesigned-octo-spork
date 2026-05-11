@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class BoggleAI {
@@ -20,7 +19,7 @@ public class BoggleAI {
         return player;
     }
 
-    public static ArrayList<String> findAllValidWords(char[][] board, List<String> dictionary, int minimumLength, List<String> usedWords) {
+    public static ArrayList<String> findAllValidWords(char[][] board, ArrayList<String> dictionary, int minimumLength, ArrayList<String> usedWords) {
         ArrayList<String> answer = new ArrayList<String>();
 
         for (int row = 0; row < 5; row++) {
@@ -36,8 +35,8 @@ public class BoggleAI {
 
     public static void searchFromSquare(
             char[][] board,
-            List<String> dictionary,
-            List<String> usedWords,
+            ArrayList<String> dictionary,
+            ArrayList<String> usedWords,
             ArrayList<String> answer,
             String wordSoFar,
             int row,

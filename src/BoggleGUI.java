@@ -34,14 +34,12 @@ public class BoggleGUI {
     public JPanel gamePanel;
 
     public int currentPhase;
-    public int numberOfRounds;
     public int timeLeft;
     public int oldScore;
 
     public BoggleGame.GameSession game;
     public Timer timer;
 
-    public JTextField roundsField;
     public JTextField targetField;
     public JTextField minimumField;
     public JTextField dictionaryField;
@@ -65,7 +63,6 @@ public class BoggleGUI {
     public JTextField boardFileField;
 
     public JLabel phaseLabel;
-    public JLabel roundLabel;
     public JLabel currentPlayerLabel;
     public JLabel timerLabel;
     public JLabel statusLabel;
@@ -189,15 +186,12 @@ public class BoggleGUI {
         fields.setLayout(new BoxLayout(fields, BoxLayout.Y_AXIS));
         fields.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
-        roundsField = new JTextField("5");
         targetField = new JTextField("0");
         minimumField = new JTextField("3");
         dictionaryField = new JTextField("src/wordlist.txt");
 
-        fields.add(makeTextRow("Number of rounds:", roundsField));
         fields.add(makeTextRow("Point target:", targetField));
         fields.add(makeTextRow("Minimum word length:", minimumField));
-        fields.add(makeTextRow("Dictionary file:", dictionaryField));
 
         if (phase == 1) {
             player1Field = new JTextField("Player 1");
@@ -273,7 +267,7 @@ public class BoggleGUI {
             fields.add(makeComboRow("AI 1 difficulty:", ai1DifficultyBox));
             fields.add(makeComboRow("AI 2 difficulty:", ai2DifficultyBox));
             fields.add(makeComboRow("Who goes first:", phase5FirstBox));
-            fields.add(makeTextRow("Optional board file:", boardFileField));
+            fields.add(makeTextRow("Board file:", boardFileField));
         }
 
         JScrollPane scroll = new JScrollPane(fields);
@@ -382,15 +376,9 @@ public class BoggleGUI {
 
     public void startGame() {
         try {
-            numberOfRounds = Integer.parseInt(roundsField.getText().trim());
             int targetScore = Integer.parseInt(targetField.getText().trim());
             int minimumLength = Integer.parseInt(minimumField.getText().trim());
             File dictionaryFile = new File(dictionaryField.getText().trim());
-
-            if (numberOfRounds < 1) {
-                JOptionPane.showMessageDialog(window, "Rounds must be at least 1.");
-                return;
-            }
 
             if (targetScore < 0) {
                 JOptionPane.showMessageDialog(window, "Target cannot be negative.");
@@ -405,6 +393,22 @@ public class BoggleGUI {
             if (dictionaryFile.exists() == false) {
                 JOptionPane.showMessageDialog(window, "Dictionary file was not found.");
                 return;
+            }
+
+            char[][] phase5Board = null;
+
+            if (currentPhase == 5) {
+                if (boardFileField.getText().trim().length() == 0) {
+                    JOptionPane.showMessageDialog(window, "Board file is required for AI vs AI.");
+                    return;
+                }
+
+                phase5Board = readBoardFile(new File(boardFileField.getText().trim()));
+
+                if (phase5Board == null) {
+                    JOptionPane.showMessageDialog(window, "Board file was not valid.");
+                    return;
+                }
             }
 
             ArrayList<BoggleGame.Player> players = new ArrayList<BoggleGame.Player>();
@@ -468,15 +472,8 @@ public class BoggleGUI {
 
             game = new BoggleGame.GameSession(players, minimumLength, targetScore, dictionaryFile);
 
-            if (currentPhase == 5 && boardFileField.getText().trim().length() > 0) {
-                char[][] fileBoard = readBoardFile(new File(boardFileField.getText().trim()));
-
-                if (fileBoard == null) {
-                    JOptionPane.showMessageDialog(window, "Board file was not valid.");
-                    return;
-                }
-
-                game.board = fileBoard;
+            if (currentPhase == 5) {
+                game.board = phase5Board;
             }
 
             makeGamePanel();
@@ -493,15 +490,12 @@ public class BoggleGUI {
         gamePanel.setLayout(new BorderLayout(10, 10));
         gamePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel top = new JPanel(new GridLayout(2, 1));
+        JPanel top = new JPanel(new GridLayout(1, 1));
 
         phaseLabel = new JLabel(getPhaseName(currentPhase), SwingConstants.CENTER);
         phaseLabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-        roundLabel = new JLabel("", SwingConstants.CENTER);
-
         top.add(phaseLabel);
-        top.add(roundLabel);
 
         gamePanel.add(top, BorderLayout.NORTH);
 
@@ -624,19 +618,12 @@ public class BoggleGUI {
 
         updateBoard();
         updateScores();
-        updateRoundLabel();
     }
 
     public void nextTurn() {
-        if (game.currentRound > numberOfRounds) {
-            endGame();
-            return;
-        }
-
         BoggleGame.Player player = game.getCurrentPlayer();
 
         currentPlayerLabel.setText("Current Player: " + player.name);
-        updateRoundLabel();
         updateScores();
         updateBoard();
 
@@ -791,15 +778,9 @@ public class BoggleGUI {
     }
 
     public void afterTurn() {
-        updateRoundLabel();
         updateScores();
 
         int status = game.moveToNextPlayer();
-
-        if (game.currentRound > numberOfRounds) {
-            endGame();
-            return;
-        }
 
         if (status == 2) {
             endGame();
@@ -861,16 +842,6 @@ public class BoggleGUI {
 
         JOptionPane.showMessageDialog(window, message);
         cards.show(mainPanel, "menu");
-    }
-
-    public void updateRoundLabel() {
-        int round = game.currentRound;
-
-        if (round > numberOfRounds) {
-            round = numberOfRounds;
-        }
-
-        roundLabel.setText("Round " + round + " of " + numberOfRounds);
     }
 
     public void updateScores() {

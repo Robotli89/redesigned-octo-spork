@@ -1,11 +1,8 @@
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-import javax.swing.SwingUtilities;
 
 public class BoggleGame {
     public static Random random = new Random();
@@ -29,11 +26,7 @@ public class BoggleGame {
         String choice = input.nextLine();
 
         if (choice.equals("1")) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    new BoggleGUI();
-                }
-            });
+            new BoggleGUI();
         }
         else if (choice.equals("2")) {
             runTextMode(input);
@@ -277,7 +270,7 @@ public class BoggleGame {
             }
 
             scanner.close();
-            Collections.sort(words);
+            sortWords(words);
         }
         catch (Exception e) {
             System.out.println("Could not load dictionary.");
@@ -293,7 +286,7 @@ public class BoggleGame {
             diceList.add(dice[i]);
         }
 
-        Collections.shuffle(diceList);
+        shuffleDice(diceList);
 
         char[][] board = new char[5][5];
         int diceNumber = 0;
@@ -332,7 +325,31 @@ public class BoggleGame {
         return word.length();
     }
 
-    public static boolean listHasWord(List<String> list, String word) {
+    public static void sortWords(ArrayList<String> words) {
+        for (int i = 1; i < words.size(); i++) {
+            String currentWord = words.get(i);
+            int j = i - 1;
+
+            while (j >= 0 && words.get(j).compareTo(currentWord) > 0) {
+                words.set(j + 1, words.get(j));
+                j = j - 1;
+            }
+
+            words.set(j + 1, currentWord);
+        }
+    }
+
+    public static void shuffleDice(ArrayList<String> diceList) {
+        for (int i = diceList.size() - 1; i > 0; i--) {
+            int randomSpot = random.nextInt(i + 1);
+            String oldWord = diceList.get(i);
+
+            diceList.set(i, diceList.get(randomSpot));
+            diceList.set(randomSpot, oldWord);
+        }
+    }
+
+    public static boolean listHasWord(ArrayList<String> list, String word) {
         if (list == null || word == null) {
             return false;
         }
@@ -346,7 +363,7 @@ public class BoggleGame {
         return false;
     }
 
-    public static boolean dictionaryHasWord(List<String> dictionary, String word) {
+    public static boolean dictionaryHasWord(ArrayList<String> dictionary, String word) {
         if (word == null) {
             return false;
         }
@@ -362,7 +379,7 @@ public class BoggleGame {
         return false;
     }
 
-    public static boolean dictionaryHasPrefix(List<String> dictionary, String word) {
+    public static boolean dictionaryHasPrefix(ArrayList<String> dictionary, String word) {
         if (word == null) {
             return false;
         }
@@ -490,7 +507,6 @@ public class BoggleGame {
         public ArrayList<String> usedWords;
         public char[][] board;
         public int currentPlayerNumber;
-        public int currentRound;
         public int minimumWordLength;
         public int targetScore;
         public boolean shakeUsed;
@@ -501,7 +517,6 @@ public class BoggleGame {
             usedWords = new ArrayList<String>();
             board = makeBoard();
             currentPlayerNumber = 0;
-            currentRound = 1;
             minimumWordLength = newMinimumWordLength;
             targetScore = newTargetScore;
             shakeUsed = false;
@@ -631,7 +646,6 @@ public class BoggleGame {
 
                 if (currentPlayerNumber >= players.size()) {
                     currentPlayerNumber = 0;
-                    currentRound = currentRound + 1;
                 }
 
                 Player player = players.get(currentPlayerNumber);
