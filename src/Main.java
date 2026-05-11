@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.Scanner;
+import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,6 +10,25 @@ public class Main {
             System.out.println("Dictionary file not found (wordlist.txt).");
             System.out.println("Result: all words will be INVALID and AI will always pass.");
             dict = new File("wordlist.txt");
+        }
+
+        System.out.println("Choose GUI mode or text mode");
+        System.out.println("1) GUI mode");
+        System.out.println("2) Text mode");
+        System.out.print("Choose: ");
+        String modeChoice = sc.nextLine();
+
+        if (modeChoice != null && modeChoice.trim().equals("1")) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    new gui.BoggleGUI();
+                }
+            });
+            return;
+        } else if (modeChoice == null || !modeChoice.trim().equals("2")) {
+            System.out.println("Invalid choice.");
+            sc.close();
+            return;
         }
 
         for (;;) {
