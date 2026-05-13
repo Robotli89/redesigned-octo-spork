@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-class Main {
+public class Boggle_Game {
     public static void main(String[] args) {
         File dict = findDictionaryFile();
         if (dict == null) {
