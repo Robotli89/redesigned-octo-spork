@@ -25,14 +25,16 @@ public class BoggleGame {
 
         String choice = input.nextLine();
 
-        if (choice.equals("1")) {
-            new BoggleGUI();
-        }
-        else if (choice.equals("2")) {
-            runTextMode(input);
-        }
-        else {
-            System.out.println("Invalid choice.");
+        switch (choice) {
+            case "1":
+                new BoggleGUI();
+                break;
+            case "2":
+                runTextMode(input);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+                break;
         }
     }
 
@@ -57,26 +59,27 @@ public class BoggleGame {
 
             String choice = input.nextLine();
 
-            if (choice.equals("0")) {
-                break;
-            }
-            else if (choice.equals("1")) {
-                setupTextGame(input, dictionaryFile, 1);
-            }
-            else if (choice.equals("2")) {
-                setupTextGame(input, dictionaryFile, 2);
-            }
-            else if (choice.equals("3")) {
-                setupTextGame(input, dictionaryFile, 3);
-            }
-            else if (choice.equals("4")) {
-                setupTextGame(input, dictionaryFile, 4);
-            }
-            else if (choice.equals("5")) {
-                setupTextGame(input, dictionaryFile, 5);
-            }
-            else {
-                System.out.println("Invalid choice.");
+            switch (choice) {
+                case "0":
+                    return;
+                case "1":
+                    setupTextGame(input, dictionaryFile, 1);
+                    break;
+                case "2":
+                    setupTextGame(input, dictionaryFile, 2);
+                    break;
+                case "3":
+                    setupTextGame(input, dictionaryFile, 3);
+                    break;
+                case "4":
+                    setupTextGame(input, dictionaryFile, 4);
+                    break;
+                case "5":
+                    setupTextGame(input, dictionaryFile, 5);
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+                    break;
             }
         }
     }
@@ -87,65 +90,67 @@ public class BoggleGame {
         System.out.print("Minimum word length: ");
         int minimumLength = readNumber(input, 3);
 
-        System.out.print("Target score (0 = none): ");
-        int targetScore = readNumber(input, 0);
+        System.out.print("Target score: ");
+        int targetScore = readNumber(input, 1);
 
-        if (phase == 1) {
-            System.out.print("Player 1 name: ");
-            String player1 = input.nextLine();
+        switch (phase) {
+            case 1:
+                System.out.print("Player 1 name: ");
+                String player1 = input.nextLine();
 
-            System.out.print("Player 2 name: ");
-            String player2 = input.nextLine();
+                System.out.print("Player 2 name: ");
+                String player2 = input.nextLine();
 
-            players.add(new Player(player1));
-            players.add(new Player(player2));
-        }
-        else if (phase == 2) {
-            System.out.print("Human name: ");
-            String humanName = input.nextLine();
+                players.add(new Player(player1));
+                players.add(new Player(player2));
+                break;
+            case 2:
+                System.out.print("Human name: ");
+                String humanName = input.nextLine();
 
-            System.out.print("AI difficulty: ");
-            String difficulty = input.nextLine();
+                System.out.print("AI difficulty: ");
+                String difficulty = input.nextLine();
 
-            players.add(new Player(humanName));
-            players.add(BoggleAI.makeAIPlayer("AI", difficulty));
-        }
-        else if (phase == 3) {
-            System.out.print("How many players: ");
-            int count = readNumber(input, 2);
+                players.add(new Player(humanName));
+                players.add(BoggleAI.makeAIPlayer("AI", difficulty));
+                break;
+            case 3:
+                System.out.print("How many players: ");
+                int count = readNumber(input, 2);
 
-            for (int i = 0; i < count; i++) {
-                System.out.print("Player " + (i + 1) + " name: ");
-                String name = input.nextLine();
+                for (int i = 0; i < count; i++) {
+                    System.out.print("Player " + (i + 1) + " name: ");
+                    String name = input.nextLine();
 
-                players.add(new Player(name));
-            }
-        }
-        else if (phase == 4) {
-            System.out.print("How many human players: ");
-            int count = readNumber(input, 1);
+                    players.add(new Player(name));
+                }
+                break;
+            case 4:
+                System.out.print("How many human players: ");
+                int humanCount = readNumber(input, 1);
 
-            for (int i = 0; i < count; i++) {
-                System.out.print("Human " + (i + 1) + " name: ");
-                String name = input.nextLine();
+                for (int i = 0; i < humanCount; i++) {
+                    System.out.print("Human " + (i + 1) + " name: ");
+                    String name = input.nextLine();
 
-                players.add(new Player(name));
-            }
+                    players.add(new Player(name));
+                }
 
-            System.out.print("AI difficulty: ");
-            String difficulty = input.nextLine();
+                System.out.print("AI difficulty: ");
+                String aiDifficulty = input.nextLine();
 
-            players.add(BoggleAI.makeAIPlayer("AI", difficulty));
-        }
-        else {
-            System.out.print("AI 1 difficulty: ");
-            String ai1 = input.nextLine();
+                players.add(BoggleAI.makeAIPlayer("AI", aiDifficulty));
+                break;
+            default:
+                System.out.print("AI 1 difficulty: ");
+                String ai1 = input.nextLine();
 
-            System.out.print("AI 2 difficulty: ");
-            String ai2 = input.nextLine();
+                System.out.print("AI 2 difficulty: ");
+                String ai2 = input.nextLine();
 
-            players.add(BoggleAI.makeAIPlayer("AI 1", ai1));
-            players.add(BoggleAI.makeAIPlayer("AI 2", ai2));
+                players.add(BoggleAI.makeAIPlayer("AI 1", ai1));
+                players.add(BoggleAI.makeAIPlayer("AI 2", ai2));
+                break;
         }
 
         GameSession session = new GameSession(players, minimumLength, targetScore, dictionaryFile);
@@ -474,6 +479,7 @@ public class BoggleGame {
     public static class Player {
         public String name;
         public int score;
+        public int roundScore;
         public int wrongGuesses;
         public int timeouts;
         public boolean passed;
@@ -491,6 +497,7 @@ public class BoggleGame {
             }
 
             score = 0;
+            roundScore = 0;
             wrongGuesses = 0;
             timeouts = 0;
             passed = false;
@@ -509,6 +516,7 @@ public class BoggleGame {
         public int currentPlayerNumber;
         public int minimumWordLength;
         public int targetScore;
+        public int currentRound;
         public boolean shakeUsed;
 
         public GameSession(ArrayList<Player> newPlayers, int newMinimumWordLength, int newTargetScore, File dictionaryFile) {
@@ -519,6 +527,7 @@ public class BoggleGame {
             currentPlayerNumber = 0;
             minimumWordLength = newMinimumWordLength;
             targetScore = newTargetScore;
+            currentRound = 1;
             shakeUsed = false;
 
             if (minimumWordLength < 3) {
@@ -568,6 +577,7 @@ public class BoggleGame {
             int points = calculateScore(newWord);
 
             player.score = player.score + points;
+            player.roundScore = player.roundScore + points;
             player.words.add(newWord);
             player.wrongGuesses = 0;
             player.timeouts = 0;
@@ -616,6 +626,7 @@ public class BoggleGame {
             int points = calculateScore(word);
 
             player.score = player.score + points;
+            player.roundScore = player.roundScore + points;
             player.words.add(word);
             usedWords.add(word);
 
@@ -708,6 +719,23 @@ public class BoggleGame {
             return foundOnePlayer;
         }
 
+        public void startNextRound() {
+            currentRound = currentRound + 1;
+            board = makeBoard();
+            usedWords.clear();
+            currentPlayerNumber = 0;
+            shakeUsed = false;
+
+            for (int i = 0; i < players.size(); i++) {
+                Player player = players.get(i);
+
+                player.roundScore = 0;
+                player.passed = false;
+                player.wrongGuesses = 0;
+                player.timeouts = 0;
+            }
+        }
+
         public void shakeBoard() {
             board = makeBoard();
             usedWords.clear();
@@ -730,6 +758,22 @@ public class BoggleGame {
 
                 if (player.quit == false) {
                     if (winner == null || player.score > winner.score) {
+                        winner = player;
+                    }
+                }
+            }
+
+            return winner;
+        }
+
+        public Player getRoundWinner() {
+            Player winner = null;
+
+            for (int i = 0; i < players.size(); i++) {
+                Player player = players.get(i);
+
+                if (player.quit == false) {
+                    if (winner == null || player.roundScore > winner.roundScore) {
                         winner = player;
                     }
                 }
