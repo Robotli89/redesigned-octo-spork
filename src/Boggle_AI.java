@@ -1,13 +1,8 @@
-package ai;
-
-import logic.DictionarySearch;
-import logic.ScoringManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class BoggleAI {
+public class Boggle_AI {
     static final Random random = new Random();
 
     public List<String> findAllValidWords(
@@ -111,5 +106,18 @@ public class BoggleAI {
             }
             words.set(j + 1, cur);
         }
+    }
+}
+
+class AI {
+    public static Player createAIPlayer(String name, String difficulty) {
+        Player p = new Player(name);
+        p.isAI = true;
+        if (difficulty == null || difficulty.trim().length() == 0) {
+            p.difficulty = "EASY";
+        } else {
+            p.difficulty = difficulty.trim().toUpperCase();
+        }
+        return p;
     }
 }
