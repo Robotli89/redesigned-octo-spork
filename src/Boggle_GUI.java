@@ -3,6 +3,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -25,7 +26,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Boggle_GUI {
@@ -120,6 +120,8 @@ public class Boggle_GUI {
     public JTextField boardFileField;
     public JComboBox<String> timerSelectionBox;
     public JTextField customTimerField;
+    public JComboBox<String> boardColorBox;
+    public JTextField saveFileField;
 
     public JLabel phaseLabel;
     public JLabel roundLabel;
@@ -135,6 +137,9 @@ public class Boggle_GUI {
     public JButton shakeButton;
     public JButton quitButton;
     public JButton hintButton;
+    public JButton saveButton;
+    public Color boardTileColor;
+    public File saveFile;
 
     public Boggle_GUI() {
         this(null);
@@ -272,12 +277,16 @@ public class Boggle_GUI {
         timerSelectionBox = new JComboBox<String>(new String[] {"None", "15 sec", "30 sec", "60 sec", "Other"});
         customTimerField = new JTextField("30");
         customTimerField.setEnabled(false);
+        boardColorBox = new JComboBox<String>(new String[] {"White", "Blue", "Green", "Yellow", "Pink"});
+        saveFileField = new JTextField("boggle_save.txt");
 
         fields.add(makeTextRow("Point target:", targetField));
         fields.add(makeTextRow("Minimum word length:", minimumField));
         fields.add(makeTextRow("Dictionary file:", dictionaryField));
         fields.add(makeComboRow("Turn timer:", timerSelectionBox));
         fields.add(makeTextRow("Custom timer (sec):", customTimerField));
+        fields.add(makeComboRow("Board color:", boardColorBox));
+        fields.add(makeTextRow("Save file:", saveFileField));
 
         timerSelectionBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -455,6 +464,8 @@ public class Boggle_GUI {
             int targetScore = Integer.parseInt(targetField.getText().trim());
             int minimumLength = Integer.parseInt(minimumField.getText().trim());
             File dictionaryFile = new File(dictionaryField.getText().trim());
+            boardTileColor = getSelectedBoardColor();
+            saveFile = new File(saveFileField.getText().trim());
             
             // Parse timer selection
             int timerSelection = timerSelectionBox.getSelectedIndex();
@@ -506,21 +517,21 @@ public class Boggle_GUI {
                 return;
             }
 
-            JTextArea rulesArea = new JTextArea(Phase1PlayerVsPlayer.getRulesText(), 7, 42);
+            JTextArea rulesArea = new JTextArea(Boggle_Game.getRulesText(), 7, 42);
             rulesArea.setEditable(false);
             rulesArea.setLineWrap(true);
             rulesArea.setWrapStyleWord(true);
             JOptionPane.showMessageDialog(window, new JScrollPane(rulesArea), "Boggle rules",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            List<Player> players = new ArrayList<Player>();
+            ArrayList<Player> players = new ArrayList<Player>();
 
             if (currentPhase == 1) {
                 players.add(new Player(player1Field.getText()));
                 players.add(new Player(player2Field.getText()));
             } else if (currentPhase == 2) {
                 Player human = new Player(humanField.getText());
-                Player ai = AI.createAIPlayer("AI", getComboText(aiDifficultyBox));
+                Player ai = Boggle_AI.createAIPlayer("AI", getComboText(aiDifficultyBox));
 
                 if (firstPlayerBox.getSelectedIndex() == 0) {
                     players.add(human);
@@ -541,7 +552,7 @@ public class Boggle_GUI {
 
                 for (int i = 0; i < humanCount + 1; i++) {
                     if (i == aiPosition - 1) {
-                        players.add(AI.createAIPlayer("AI", getComboText(phase4DifficultyBox)));
+                        players.add(Boggle_AI.createAIPlayer("AI", getComboText(phase4DifficultyBox)));
                     } else {
                         int humanNumber = i;
                         if (i > aiPosition - 1) {
@@ -552,8 +563,8 @@ public class Boggle_GUI {
                     }
                 }
             } else {
-                Player ai1 = AI.createAIPlayer("AI 1", getComboText(ai1DifficultyBox));
-                Player ai2 = AI.createAIPlayer("AI 2", getComboText(ai2DifficultyBox));
+                Player ai1 = Boggle_AI.createAIPlayer("AI 1", getComboText(ai1DifficultyBox));
+                Player ai2 = Boggle_AI.createAIPlayer("AI 2", getComboText(ai2DifficultyBox));
 
                 if (phase5FirstBox.getSelectedIndex() == 0) {
                     players.add(ai1);
@@ -617,13 +628,13 @@ public class Boggle_GUI {
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
 
-        JPanel boardPanel = new JPanel(new GridLayout(BoggleBoard.size, BoggleBoard.size, 5, 5));
+        JPanel boardPanel = new JPanel(new GridLayout(GameSession.BOARD_SIZE, GameSession.BOARD_SIZE, 5, 5));
         boardPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        boardLabels = new JLabel[BoggleBoard.size][BoggleBoard.size];
+        boardLabels = new JLabel[GameSession.BOARD_SIZE][GameSession.BOARD_SIZE];
 
-        for (int row = 0; row < BoggleBoard.size; row++) {
-            for (int col = 0; col < BoggleBoard.size; col++) {
+        for (int row = 0; row < GameSession.BOARD_SIZE; row++) {
+            for (int col = 0; col < GameSession.BOARD_SIZE; col++) {
                 JLabel label = new JLabel("", SwingConstants.CENTER);
                 label.setFont(new Font("Arial", Font.BOLD, 28));
                 label.setOpaque(true);
@@ -682,11 +693,13 @@ public class Boggle_GUI {
         shakeButton = new JButton("Shake Board");
         quitButton = new JButton("Quit");
         hintButton = new JButton("Hint");
+        saveButton = new JButton("Save Game");
 
         buttons.add(passButton);
         buttons.add(shakeButton);
         buttons.add(quitButton);
         buttons.add(hintButton);
+        buttons.add(saveButton);
 
         statusLabel = new JLabel("Ready.");
 
@@ -729,6 +742,12 @@ public class Boggle_GUI {
         hintButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showHint();
+            }
+        });
+
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveGameFromGui(true);
             }
         });
 
@@ -901,6 +920,13 @@ public class Boggle_GUI {
         int answer = JOptionPane.showConfirmDialog(window, "Are you sure you want to quit?");
 
         if (answer == JOptionPane.YES_OPTION) {
+            int saveAnswer = JOptionPane.showConfirmDialog(window, "Save game to file before quitting?");
+            if (saveAnswer == JOptionPane.YES_OPTION && !saveGameFromGui(false)) {
+                if (humanTurn) {
+                    startTimer();
+                }
+                return;
+            }
             stopTimer();
             game.quit();
             statusLabel.setText(game.getCurrentPlayer().name + " quit.");
@@ -914,7 +940,7 @@ public class Boggle_GUI {
 
     public void aiMove() {
         Player player = game.getCurrentPlayer();
-        GameSession.AIResult result = game.runAITurnIfNeeded();
+        AIResult result = game.runAITurnIfNeeded();
 
         // #region agent log
         agentLog("H3", "Boggle_GUI.aiMove", "AI turn result",
@@ -1045,13 +1071,57 @@ public class Boggle_GUI {
         passButton.setEnabled(on);
         quitButton.setEnabled(on);
         hintButton.setEnabled(on);
+        saveButton.setEnabled(game != null);
     }
 
     public void updateBoard() {
-        for (int row = 0; row < BoggleBoard.size; row++) {
-            for (int col = 0; col < BoggleBoard.size; col++) {
+        for (int row = 0; row < GameSession.BOARD_SIZE; row++) {
+            for (int col = 0; col < GameSession.BOARD_SIZE; col++) {
                 boardLabels[row][col].setText("" + game.board[row][col]);
+                boardLabels[row][col].setBackground(boardTileColor == null ? Color.WHITE : boardTileColor);
             }
+        }
+    }
+
+    public boolean saveGameFromGui(boolean allowChooseFile) {
+        if (game == null) {
+            return false;
+        }
+
+        File file = saveFile;
+        if (file == null || file.getPath().trim().length() == 0 || allowChooseFile) {
+            JFileChooser chooser = new JFileChooser(new File("."));
+            if (file != null && file.getPath().trim().length() > 0) {
+                chooser.setSelectedFile(file);
+            } else {
+                chooser.setSelectedFile(new File("boggle_save.txt"));
+            }
+
+            int result = chooser.showSaveDialog(window);
+            if (result != JFileChooser.APPROVE_OPTION) {
+                return false;
+            }
+            file = chooser.getSelectedFile();
+            saveFile = file;
+        }
+
+        try {
+            boolean saved = GameSession.saveGame(
+                    file,
+                    game.currentRound,
+                    game.board,
+                    game.players,
+                    game.usedWords,
+                    game.isShakeUpUsed());
+            if (!saved) {
+                JOptionPane.showMessageDialog(window, "Could not save game file.");
+                return false;
+            }
+            statusLabel.setText("Saved game to " + file.getName() + ".");
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(window, "Could not save game file.");
+            return false;
         }
     }
 
@@ -1062,7 +1132,7 @@ public class Boggle_GUI {
             return;
         }
 
-        List<String> words = game.boggleAI.findAllValidWords(
+        ArrayList<String> words = game.boggleAI.findAllValidWords(
                 game.board, game.dictionary, game.minimumWordLength, game.usedWords);
 
         if (words.size() == 0) {
@@ -1099,6 +1169,22 @@ public class Boggle_GUI {
         return text;
     }
 
+    public Color getSelectedBoardColor() {
+        String color = getComboText(boardColorBox);
+
+        if (color.equals("Blue")) {
+            return new Color(210, 230, 255);
+        } else if (color.equals("Green")) {
+            return new Color(215, 245, 220);
+        } else if (color.equals("Yellow")) {
+            return new Color(255, 245, 190);
+        } else if (color.equals("Pink")) {
+            return new Color(255, 220, 235);
+        }
+
+        return Color.WHITE;
+    }
+
     public String getPhaseName(int phase) {
         if (phase == 1) {
             return "Phase 1: Player vs Player";
@@ -1129,16 +1215,16 @@ public class Boggle_GUI {
             scanner.close();
             letters = letters.toUpperCase();
 
-            int need = BoggleBoard.size * BoggleBoard.size;
+            int need = GameSession.BOARD_SIZE * GameSession.BOARD_SIZE;
             if (letters.length() < need) {
                 return null;
             }
 
-            char[][] board = new char[BoggleBoard.size][BoggleBoard.size];
+            char[][] board = new char[GameSession.BOARD_SIZE][GameSession.BOARD_SIZE];
             int number = 0;
 
-            for (int row = 0; row < BoggleBoard.size; row++) {
-                for (int col = 0; col < BoggleBoard.size; col++) {
+            for (int row = 0; row < GameSession.BOARD_SIZE; row++) {
+                for (int col = 0; col < GameSession.BOARD_SIZE; col++) {
                     board[row][col] = letters.charAt(number);
                     number = number + 1;
                 }

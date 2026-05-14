@@ -1,19 +1,18 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class Boggle_AI {
     static final Random random = new Random();
 
-    public List<String> findAllValidWords(
+    public ArrayList<String> findAllValidWords(
             char[][] board,
-            List<String> dictionaryList,
+            ArrayList<String> dictionaryList,
             int minimumWordLength,
-            List<String> usedWords
+            ArrayList<String> usedWords
     ) {
         int minLen = minimumWordLength;
         if (minLen < 3) minLen = 3;
-        List<String> found = new ArrayList<String>();
+        ArrayList<String> found = new ArrayList<String>();
         int n = board.length;
         int m = board[0].length;
 
@@ -29,17 +28,7 @@ public class Boggle_AI {
         return found;
     }
 
-    void dfs(
-            char[][] board,
-            int r,
-            int c,
-            StringBuilder current,
-            boolean[][] visited,
-            List<String> dictionary,
-            int minLen,
-            List<String> usedWords,
-            List<String> out
-    ) {
+    void dfs(char[][] board, int r,  int c, StringBuilder current, boolean[][] visited, ArrayList<String> dictionary, int minLen, ArrayList<String> usedWords, ArrayList<String> out) {
         if (r < 0 || c < 0 || r >= board.length || c >= board[0].length) return;
         if (visited[r][c]) return;
 
@@ -47,7 +36,7 @@ public class Boggle_AI {
         current.append(Character.toUpperCase(board[r][c]));
         String currentWord = current.toString();
 
-        if (!DictionarySearch.prefixExists(currentWord, dictionary)) {
+        if (!GameSession.prefixExists(currentWord, dictionary)) {
             current.setLength(lenBefore);
             return;
         }
@@ -55,9 +44,9 @@ public class Boggle_AI {
         visited[r][c] = true;
 
         if (currentWord.length() >= minLen
-                && DictionarySearch.checkDictionary(currentWord, dictionary)
-                && !ScoringManager.contains(usedWords, currentWord)) {
-            if (!ScoringManager.contains(out, currentWord)) {
+                && GameSession.checkDictionary(currentWord, dictionary)
+                && !GameSession.contains(usedWords, currentWord)) {
+            if (!GameSession.contains(out, currentWord)) {
                 out.add(currentWord);
             }
         }
@@ -73,7 +62,7 @@ public class Boggle_AI {
         current.setLength(lenBefore);
     }
 
-    public String chooseWord(List<String> aiWordList, String difficulty) {
+    public String chooseWord(ArrayList<String> aiWordList, String difficulty) {
         if (aiWordList == null || aiWordList.isEmpty()) return null;
         String diff = difficulty;
         if (diff == null || diff.trim().length() == 0) diff = "EASY";
@@ -83,7 +72,7 @@ public class Boggle_AI {
             return aiWordList.get(random.nextInt(aiWordList.size()));
         }
 
-        List<String> sorted = new ArrayList<String>();
+        ArrayList<String> sorted = new ArrayList<String>();
         for (int i = 0; i < aiWordList.size(); i++) sorted.add(aiWordList.get(i));
         insertionSortByLength(sorted);
 
@@ -96,7 +85,7 @@ public class Boggle_AI {
         return sorted.get(random.nextInt(top));
     }
 
-    public static void insertionSortByLength(List<String> words) {
+    public static void insertionSortByLength(ArrayList<String> words) {
         for (int i = 1; i < words.size(); i++) {
             String cur = words.get(i);
             int j = i - 1;
@@ -107,9 +96,7 @@ public class Boggle_AI {
             words.set(j + 1, cur);
         }
     }
-}
 
-class AI {
     public static Player createAIPlayer(String name, String difficulty) {
         Player p = new Player(name);
         p.isAI = true;

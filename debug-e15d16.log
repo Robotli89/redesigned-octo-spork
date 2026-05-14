@@ -222,3 +222,54 @@
 {"sessionId":"e15d16","hypothesisId":"H2","location":"BoggleGUI.afterTurn","message":"nextTurn status","timestamp":1778693633388,"data":{"status":0,"round":12}}
 {"sessionId":"e15d16","hypothesisId":"H3","location":"BoggleGUI.aiMove","message":"AI turn result","timestamp":1778693634293,"data":{"passed":false,"word":"ASHLARS"}}
 {"sessionId":"e15d16","hypothesisId":"H2","location":"BoggleGUI.afterTurn","message":"nextTurn status","timestamp":1778693634295,"data":{"status":0,"round":13}}
+{"sessionId":"e15d16","hypothesisId":"BOOT","location":"Boggle_GUI.<init>","message":"gui started","timestamp":1778698064936,"data":{"logFile":"/Users/kevinli/Downloads/redesigned-octo-spork/debug-e15d16.log","userDir":"/Users/kevinli/Downloads/redesigned-octo-spork"}}
+{"sessionId":"e15d16","hypothesisId":"H4","location":"Boggle_GUI.startGame","message":"dictionary path check","timestamp":1778698069110,"data":{"exists":true,"path":"/Users/kevinli/Downloads/redesigned-octo-spork/src/wordlist.txt"}}
+{"sessionId":"e15d16","hypothesisId":"H5","location":"Boggle_GUI.startGame","message":"session about to start","timestamp":1778698071785,"data":{"phase":2,"playerCount":2}}
+{"sessionId":"e15d16","hypothesisId":"H1","location":"Boggle_GUI.startGame","message":"GameSession created","timestamp":1778698073126,"data":{}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778698077736,"data":{"status":0,"round":1}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778698078646,"data":{"passed":false,"word":"HUI"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778698078647,"data":{"status":0,"round":2}}
+{"sessionId":"e15d16","hypothesisId":"BOOT","location":"Boggle_GUI.<init>","message":"gui started","timestamp":1778699110728,"data":{"logFile":"/Users/kevinli/Downloads/redesigned-octo-spork/debug-e15d16.log","userDir":"/Users/kevinli/Downloads/redesigned-octo-spork"}}
+{"sessionId":"e15d16","hypothesisId":"H4","location":"Boggle_GUI.startGame","message":"dictionary path check","timestamp":1778699119277,"data":{"exists":true,"path":"/Users/kevinli/Downloads/redesigned-octo-spork/src/wordlist.txt"}}
+{"sessionId":"e15d16","hypothesisId":"H5","location":"Boggle_GUI.startGame","message":"session about to start","timestamp":1778699120740,"data":{"phase":5,"playerCount":2}}
+{"sessionId":"e15d16","hypothesisId":"H1","location":"Boggle_GUI.startGame","message":"GameSession created","timestamp":1778699121869,"data":{}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699122782,"data":{"passed":false,"word":"TROGS"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699122786,"data":{"status":0,"round":1}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699123691,"data":{"passed":false,"word":"AES"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699123694,"data":{"status":0,"round":2}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699124602,"data":{"passed":false,"word":"OSTEOPATH"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699124603,"data":{"status":0,"round":2}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699125512,"data":{"passed":false,"word":"SAI"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699125513,"data":{"status":0,"round":3}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699126421,"data":{"passed":false,"word":"REI"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699126422,"data":{"status":0,"round":3}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699127330,"data":{"passed":false,"word":"EPOS"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699127331,"data":{"status":0,"round":4}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699128240,"data":{"passed":false,"word":"HORT"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699128241,"data":{"status":0,"round":4}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699129149,"data":{"passed":false,"word":"TIE"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699129150,"data":{"status":0,"round":5}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699130058,"data":{"passed":false,"word":"ANI"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699130059,"data":{"status":0,"round":5}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699130962,"data":{"passed":false,"word":"FAINS"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699130963,"data":{"status":0,"round":6}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699131870,"data":{"passed":false,"word":"SEI"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699131871,"data":{"status":0,"round":6}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699132778,"data":{"passed":false,"word":"SORT"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699132779,"data":{"status":0,"round":7}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699133683,"data":{"passed":false,"word":"ROSET"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699133683,"data":{"status":0,"round":7}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699134589,"data":{"passed":false,"word":"FAN"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699134590,"data":{"status":0,"round":8}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699135496,"data":{"passed":false,"word":"ROTSE"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699135496,"data":{"status":0,"round":8}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699136405,"data":{"passed":false,"word":"RETE"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699136405,"data":{"status":0,"round":9}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699137311,"data":{"passed":false,"word":"SEAN"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699137312,"data":{"status":0,"round":9}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699138219,"data":{"passed":false,"word":"ESROG"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699138219,"data":{"status":0,"round":10}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699139127,"data":{"passed":false,"word":"TREF"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699139128,"data":{"status":0,"round":10}}
+{"sessionId":"e15d16","hypothesisId":"H3","location":"Boggle_GUI.aiMove","message":"AI turn result","timestamp":1778699140035,"data":{"passed":false,"word":"HOER"}}
+{"sessionId":"e15d16","hypothesisId":"H2","location":"Boggle_GUI.afterTurn","message":"nextTurn status","timestamp":1778699140036,"data":{"status":0,"round":11}}
