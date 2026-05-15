@@ -28,6 +28,7 @@ class GameSession {
     public boolean shakeUpUsed;
     public boolean hintUsed;
     public String endReason;
+    public Player forcedWinner;
 
     public int currentTurnIndex;
     public int currentRound;
@@ -173,6 +174,8 @@ class GameSession {
     }
 
     public Player determineWinner() {
+        if (forcedWinner != null) return forcedWinner;
+
         Player best = null;
         for (Player p : players) {
             if (p.quit) continue;
@@ -214,8 +217,34 @@ class GameSession {
         if (currentPlayer.wrongGuessCount >= 2) {
             currentPlayer.resetWrongGuessCount();
             currentPlayer.incrementAutoPassWrongCount();
+            Player aiWinner = findAIWinnerForWrongGuesses(currentPlayer);
+            if (aiWinner != null) {
+                forcedWinner = aiWinner;
+                endReason = "AI_WON_WRONG_GUESSES";
+                return;
+            }
             processPass(currentPlayer);
         }
+    }
+
+    public Player findAIWinnerForWrongGuesses(Player currentPlayer) {
+        if (currentPlayer == null || currentPlayer.isAI) return null;
+        Player aiPlayer = null;
+        int activeHumanCount = 0;
+
+        for (int i = 0; i < players.size(); i++) {
+            Player p = players.get(i);
+            if (p.quit) continue;
+            if (p.isAI) {
+                if (aiPlayer != null) return null;
+                aiPlayer = p;
+            } else {
+                activeHumanCount++;
+            }
+        }
+
+        if (activeHumanCount == 1) return aiPlayer;
+        return null;
     }
 
     public void processTimeout(Player currentPlayer) {
@@ -240,6 +269,11 @@ class GameSession {
 
     // return: 0=continue, 1=offer shake, 2=end game
     public int verifyGameState(ArrayList<Player> players) {
+        if (forcedWinner != null) {
+            if (endReason == null) endReason = "FORCED_WINNER";
+            return 2;
+        }
+
         if (players == null || players.isEmpty()) {
             endReason = "ALL_PLAYERS_PASSED";
             return 2;

@@ -69,7 +69,15 @@ public class BoggleAI {
         diff = diff.trim().toUpperCase();
 
         if (diff.equals("EASY")) {
-            return aiWordList.get(random.nextInt(aiWordList.size()));
+            ArrayList<String> easyWords = new ArrayList<String>();
+            for (int i = 0; i < aiWordList.size(); i++) {
+                String word = aiWordList.get(i);
+                if (word != null && word.length() >= 3 && word.length() <= 4) {
+                    easyWords.add(word);
+                }
+            }
+            if (easyWords.isEmpty()) return null;
+            return easyWords.get(random.nextInt(easyWords.size()));
         }
 
         ArrayList<String> sorted = new ArrayList<String>();

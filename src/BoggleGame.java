@@ -285,17 +285,6 @@ public class BoggleGame {
     }
 
     public static boolean handlePlayerVsAIHumanPassed(Scanner sc, GameSession session) {
-        if (!session.isShakeUpUsed()) {
-            System.out.print("Shake Up? (Y/N): ");
-            String ch = sc.nextLine();
-            if (ch == null) ch = "";
-            ch = ch.trim();
-            if (ch.equalsIgnoreCase("Y")) {
-                session.performShake();
-                return false;
-            }
-        }
-
         if (session.targetScore == 0) {
             Player passer = session.players.get(0);
             Player other = session.players.get(1);
@@ -323,10 +312,37 @@ public class BoggleGame {
                 }
             }
 
+            if (offerShakeAfterPassedHuman(sc, session, other)) {
+                return false;
+            }
+
             return true;
         }
 
+        if (offerShakeAfterPassedHuman(sc, session, session.players.get(1))) {
+            return false;
+        }
+
         return true;
+    }
+
+    public static boolean offerShakeAfterPassedHuman(Scanner sc, GameSession session, Player aiPlayer) {
+        if (session.isShakeUpUsed()) return false;
+
+        if (aiPlayer != null && aiPlayer.totalScore > session.players.get(0).totalScore) {
+            System.out.println(aiPlayer.name + " is now ahead.");
+        }
+
+        System.out.print("Shake Up? (Y/N): ");
+        String ch = sc.nextLine();
+        if (ch == null) ch = "";
+        ch = ch.trim();
+        if (ch.equalsIgnoreCase("Y")) {
+            session.performShake();
+            session.currentTurnIndex = 0;
+            return true;
+        }
+        return false;
     }
 
     public static void runPlayerVsAI(Scanner sc, File dictionaryFile) {

@@ -821,6 +821,11 @@ public class BoggleGUI {
         updateBoard();
 
         if (player.isAI) {
+            if (shouldStopForPassedHuman(player)) {
+                offerShakeAfterAILead(player);
+                return;
+            }
+
             // AI turns do not need typing controls; wait briefly so the UI visibly updates.
             setInput(false);
             statusLabel.setText(player.name + " is thinking...");
@@ -922,7 +927,16 @@ public class BoggleGUI {
             // Used words do not end the turn, so resume the timer.
             startTimer();
         } else {
-            if (player.passed) {
+            addWrongWordHistory(player.name, word);
+            updateScores();
+
+            if (game.forcedWinner != null) {
+                statusLabel.setText("Two wrong guesses. " + game.forcedWinner.name + " wins.");
+                afterTurn();
+            } else if (currentPhase == 2 && !player.isAI) {
+                statusLabel.setText("Wrong word: " + word + ". AI's turn.");
+                afterTurn();
+            } else if (player.passed) {
                 statusLabel.setText("Too many wrong guesses. Turn passed.");
                 afterTurn();
             } else {
@@ -1025,7 +1039,63 @@ public class BoggleGUI {
         }
 
         updateScores();
+        if (!result.passed && shouldStopForPassedHuman(player)) {
+            offerShakeAfterAILead(player);
+            return;
+        }
         afterTurn();
+    }
+
+    /** In Player vs AI, stop AI scoring once it has overtaken a passed human. */
+    public boolean shouldStopForPassedHuman(Player aiPlayer) {
+        return getPassedHumanIndexBehind(aiPlayer) >= 0;
+    }
+
+    /** Returns the passed human who should get the next chance after a shake. */
+    public int getPassedHumanIndexBehind(Player aiPlayer) {
+        if (currentPhase != 2 || aiPlayer == null || !aiPlayer.isAI) {
+            return -1;
+        }
+
+        for (int i = 0; i < game.players.size(); i++) {
+            Player player = game.players.get(i);
+            if (!player.isAI && !player.quit && player.passed && aiPlayer.totalScore > player.totalScore) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /** Offers the passed human a board shake after the AI takes the lead. */
+    public void offerShakeAfterAILead(Player aiPlayer) {
+        stopTimer();
+        setInput(false);
+        updateScores();
+        int restartIndex = getPassedHumanIndexBehind(aiPlayer);
+
+        if (game.isShakeUpUsed()) {
+            statusLabel.setText(aiPlayer.name + " is ahead. Game over.");
+            endGame();
+            return;
+        }
+
+        int answer = JOptionPane.showConfirmDialog(
+                window,
+                aiPlayer.name + " is now ahead. Shake the board?");
+
+        if (answer == JOptionPane.YES_OPTION) {
+            game.performShake();
+            if (restartIndex >= 0) {
+                game.currentTurnIndex = restartIndex;
+            }
+            wordHistoryArea.setText("");
+            statusLabel.setText("Board was shaken.");
+            nextTurn();
+        } else {
+            statusLabel.setText(aiPlayer.name + " is ahead. Game over.");
+            endGame();
+        }
     }
 
     /**
@@ -1141,6 +1211,12 @@ public class BoggleGUI {
     /** Adds one accepted word to the scrolling word history. */
     public void addWordHistory(String playerName, String word, int points) {
         wordHistoryArea.append(playerName + " - " + word + " (+" + points + ")\n");
+        wordHistoryArea.setCaretPosition(wordHistoryArea.getDocument().getLength());
+    }
+
+    /** Adds an invalid submitted word to the scrolling word history. */
+    public void addWrongWordHistory(String playerName, String word) {
+        wordHistoryArea.append(playerName + " - " + word + " (wrong)\n");
         wordHistoryArea.setCaretPosition(wordHistoryArea.getDocument().getLength());
     }
 
