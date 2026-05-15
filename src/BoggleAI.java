@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Boggle_AI {
+public class BoggleAI {
     static final Random random = new Random();
 
     public ArrayList<String> findAllValidWords(

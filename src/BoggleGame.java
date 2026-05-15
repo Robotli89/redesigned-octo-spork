@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Boggle_Game {
+public class BoggleGame {
     public static void main(String[] args) {
         File dict = findDictionaryFile();
         if (dict == null) {
@@ -34,7 +34,7 @@ public class Boggle_Game {
                 final File dictionaryForGui = dict;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        new Boggle_GUI(dictionaryForGui);
+                        new BoggleGUI(dictionaryForGui);
                     }
                 });
                 return;
@@ -344,7 +344,7 @@ public class Boggle_Game {
 
         ArrayList<Player> players = new ArrayList<Player>();
         players.add(new Player(human));
-        players.add(Boggle_AI.createAIPlayer("AI", diff));
+        players.add(BoggleAI.createAIPlayer("AI", diff));
 
         GameSession session = new GameSession(players, minLen, target, dictionaryFile);
 
@@ -371,7 +371,7 @@ public class Boggle_Game {
                 input = input.trim();
                 if (input.equalsIgnoreCase("QUIT")) {
                     session.quit();
-                    session.saveIfPvAIQuit(new File(human + "_save.txt"));
+                    session.saveIfPvAIQuit(new File(human + "Save.txt"));
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
                     boolean endNow = handlePlayerVsAIHumanPassed(sc, session);
@@ -538,7 +538,7 @@ public class Boggle_Game {
         for (int i = 0; i < aiCount; i++) {
             System.out.print("AI #" + (i + 1) + " difficulty (Easy/Medium/Hard): ");
             String diff = sc.nextLine();
-            players.add(Boggle_AI.createAIPlayer("AI" + (i + 1), diff));
+            players.add(BoggleAI.createAIPlayer("AI" + (i + 1), diff));
         }
 
         GameSession session = new GameSession(players, minLen, target, dictionaryFile);
@@ -631,7 +631,7 @@ public class Boggle_Game {
         int timerSeconds = readTimerChoice(sc);
 
         ArrayList<Player> players = new ArrayList<Player>();
-        players.add(Boggle_AI.createAIPlayer("YourAI", yourDiff));
+        players.add(BoggleAI.createAIPlayer("YourAI", yourDiff));
         players.add(new Player(oppName));
 
         GameSession session = new GameSession(players, minLen, target, dictionaryFile);

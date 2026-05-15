@@ -24,7 +24,7 @@ class GameSession {
     public ArrayList<String> usedWords;
     public ArrayList<String> dictionary;
 
-    public Boggle_AI boggleAI;
+    public BoggleAI boggleAI;
     public boolean shakeUpUsed;
     public boolean hintUsed;
     public String endReason;
@@ -48,7 +48,7 @@ class GameSession {
         for (int i = 0; i < playerList.size(); i++) players.add(playerList.get(i));
         usedWords = new ArrayList<String>();
         dictionary = loadDictionary(dictionaryFile);
-        boggleAI = new Boggle_AI();
+        boggleAI = new BoggleAI();
         shakeUpUsed = false;
         hintUsed = false;
         currentTurnIndex = 0;
