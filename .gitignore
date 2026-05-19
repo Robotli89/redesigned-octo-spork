@@ -1,1 +1,10 @@
 /bin/
+*.class
+*.log
+*Save.txt
+boggleSave.txt
+.DS_Store
+.project
+.classpath
+.settings/
+.recommenders/

@@ -598,4 +598,84 @@ class GameSession {
         }
         return false;
     }
+
+    public static GameSession loadGame(
+            File file,
+            File dictionaryFile,
+            int minimumLength,
+            int targetScore
+    ) throws Exception {
+        Scanner sc = new Scanner(file);
+        int loadedRound = 1;
+        boolean loadedShakeUp = false;
+        ArrayList<String> loadedUsedWords = new ArrayList<String>();
+        char[][] loadedBoard = new char[BOARD_SIZE][BOARD_SIZE];
+        ArrayList<Player> loadedPlayers = new ArrayList<Player>();
+
+        try {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+
+                if (line.startsWith("CurrentRound:")) {
+                    loadedRound = Integer.parseInt(line.substring("CurrentRound:".length()).trim());
+                } else if (line.startsWith("ShakeUpUsed:")) {
+                    String val = line.substring("ShakeUpUsed:".length()).trim();
+                    loadedShakeUp = val.equalsIgnoreCase("YES");
+                } else if (line.startsWith("UsedWords:")) {
+                    String val = line.substring("UsedWords:".length()).trim();
+                    if (!val.isEmpty()) {
+                        String[] parts = val.split(",");
+                        for (String part : parts) {
+                            if (!part.trim().isEmpty()) {
+                                loadedUsedWords.add(part.trim().toUpperCase());
+                            }
+                        }
+                    }
+                } else if (line.startsWith("Board:")) {
+                    for (int r = 0; r < BOARD_SIZE; r++) {
+                        if (!sc.hasNextLine()) {
+                            throw new Exception("Unexpected end of file while reading board.");
+                        }
+                        String boardLine = sc.nextLine().trim();
+                        boardLine = boardLine.replace(" ", "");
+                        if (boardLine.length() < BOARD_SIZE) {
+                            throw new Exception("Invalid board line in save file: " + boardLine);
+                        }
+                        for (int c = 0; c < BOARD_SIZE; c++) {
+                            loadedBoard[r][c] = Character.toUpperCase(boardLine.charAt(c));
+                        }
+                    }
+                } else if (line.startsWith("Players:")) {
+                    while (sc.hasNextLine()) {
+                        String playerLine = sc.nextLine().trim();
+                        if (playerLine.isEmpty()) continue;
+                        String[] parts = playerLine.split("\\|");
+                        if (parts.length >= 2) {
+                            String name = parts[0].trim();
+                            int score = Integer.parseInt(parts[1].trim());
+                            Player p = new Player(name);
+                            p.totalScore = score;
+                            loadedPlayers.add(p);
+                        }
+                    }
+                }
+            }
+        } finally {
+            sc.close();
+        }
+
+        if (loadedPlayers.isEmpty()) {
+            throw new Exception("No players found in save file.");
+        }
+
+        // Create the session
+        GameSession session = new GameSession(loadedPlayers, minimumLength, targetScore, dictionaryFile);
+        session.currentRound = loadedRound;
+        session.shakeUpUsed = loadedShakeUp;
+        session.usedWords = loadedUsedWords;
+        session.board = loadedBoard;
+
+        return session;
+    }
 }

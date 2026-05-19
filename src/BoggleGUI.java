@@ -111,6 +111,9 @@ public class BoggleGUI {
     public JTextField targetField;
     public JTextField minimumField;
     public JTextField dictionaryField;
+    public JTextField importSaveField;
+    public JButton importSaveBrowseButton;
+
 
     public JTextField player1Field;
     public JTextField player2Field;
@@ -184,6 +187,8 @@ public class BoggleGUI {
 
         cards.show(mainPanel, "menu");
 
+        applyColorTheme(Color.WHITE);
+
         // #region agent log
         agentLog("BOOT", "BoggleGUI.<init>", "gui started",
                 "{\"logFile\":\"" + esc(getAgentLogFile().getAbsolutePath()) + "\",\"userDir\":\""
@@ -206,6 +211,7 @@ public class BoggleGUI {
         menuPanel.add(title, BorderLayout.NORTH);
 
         JPanel buttons = new JPanel();
+        buttons.setOpaque(false);
         buttons.setLayout(new GridLayout(7, 1, 10, 10));
         buttons.setBorder(BorderFactory.createEmptyBorder(10, 230, 40, 230));
 
@@ -284,6 +290,7 @@ public class BoggleGUI {
         setupPanel.add(title, BorderLayout.NORTH);
 
         JPanel fields = new JPanel();
+        fields.setOpaque(false);
         fields.setLayout(new BoxLayout(fields, BoxLayout.Y_AXIS));
         fields.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
@@ -300,6 +307,18 @@ public class BoggleGUI {
             }
         }
         dictionaryField = new JTextField(dictDefault);
+        importSaveField = new JTextField("");
+        importSaveBrowseButton = new JButton("Browse...");
+        importSaveBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser(new File("."));
+                int result = chooser.showOpenDialog(window);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    importSaveField.setText(chooser.getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+
         timerSelectionBox = new JComboBox<String>(new String[] {"None", "15 sec", "30 sec", "60 sec", "Other"});
         customTimerField = new JTextField("30");
         customTimerField.setEnabled(false);
@@ -308,11 +327,24 @@ public class BoggleGUI {
 
         fields.add(makeTextRow("Point target:", targetField));
         fields.add(makeTextRow("Minimum word length:", minimumField));
-        fields.add(makeTextRow("Dictionary file:", dictionaryField));
+
+        JPanel importSaveRow = makeFileBrowseRow("Import Save File (Optional):", importSaveField, importSaveBrowseButton);
+        importSaveRow.setVisible(phase != 1 && phase != 3);
+        fields.add(importSaveRow);
+
         fields.add(makeComboRow("Turn timer:", timerSelectionBox));
         fields.add(makeTextRow("Custom timer (sec):", customTimerField));
         fields.add(makeComboRow("Board color:", boardColorBox));
         fields.add(makeTextRow("Save file:", saveFileField));
+
+
+        boardColorBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                applyColorTheme(getSelectedBoardColor());
+            }
+        });
+
+        applyColorTheme(getSelectedBoardColor());
 
         // Only enable the custom timer box when "Other" is selected.
         timerSelectionBox.addActionListener(new ActionListener() {
@@ -397,9 +429,13 @@ public class BoggleGUI {
 
         // A scroll pane keeps the setup screen usable when many player fields exist.
         JScrollPane scroll = new JScrollPane(fields);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setBorder(null);
         setupPanel.add(scroll, BorderLayout.CENTER);
 
         JPanel bottom = new JPanel();
+        bottom.setOpaque(false);
 
         JButton back = new JButton("Back");
         JButton start = new JButton("Start Game");
@@ -430,6 +466,7 @@ public class BoggleGUI {
     public JPanel makeTextRow(String text, JTextField field) {
         JPanel row = new JPanel(new BorderLayout(10, 5));
         row.setMaximumSize(new Dimension(700, 45));
+        row.setOpaque(false);
 
         JLabel label = new JLabel(text);
         label.setPreferredSize(new Dimension(230, 30));
@@ -444,12 +481,32 @@ public class BoggleGUI {
     public JPanel makeComboRow(String text, JComboBox<String> box) {
         JPanel row = new JPanel(new BorderLayout(10, 5));
         row.setMaximumSize(new Dimension(700, 45));
+        row.setOpaque(false);
 
         JLabel label = new JLabel(text);
         label.setPreferredSize(new Dimension(230, 30));
 
         row.add(label, BorderLayout.WEST);
         row.add(box, BorderLayout.CENTER);
+
+        return row;
+    }
+
+    public JPanel makeFileBrowseRow(String text, JTextField field, JButton button) {
+        JPanel row = new JPanel(new BorderLayout(10, 5));
+        row.setMaximumSize(new Dimension(700, 45));
+        row.setOpaque(false);
+
+        JLabel label = new JLabel(text);
+        label.setPreferredSize(new Dimension(230, 30));
+
+        JPanel rightPanel = new JPanel(new BorderLayout(5, 5));
+        rightPanel.add(field, BorderLayout.CENTER);
+        rightPanel.add(button, BorderLayout.EAST);
+        rightPanel.setOpaque(false);
+
+        row.add(label, BorderLayout.WEST);
+        row.add(rightPanel, BorderLayout.CENTER);
 
         return row;
     }
@@ -565,66 +622,103 @@ public class BoggleGUI {
             JOptionPane.showMessageDialog(window, new JScrollPane(rulesArea), "Boggle rules",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            // Build players in the exact order they should take turns.
-            ArrayList<Player> players = new ArrayList<Player>();
-
-            if (currentPhase == 1) {
-                players.add(new Player(player1Field.getText()));
-                players.add(new Player(player2Field.getText()));
-            } else if (currentPhase == 2) {
-                Player human = new Player(humanField.getText());
-                Player ai = BoggleAI.createAIPlayer("AI", getComboText(aiDifficultyBox));
-
-                if (firstPlayerBox.getSelectedIndex() == 0) {
-                    players.add(human);
-                    players.add(ai);
-                } else {
-                    players.add(ai);
-                    players.add(human);
+            String importPath = importSaveField == null ? "" : importSaveField.getText().trim();
+            if (importPath.length() > 0 && currentPhase != 1 && currentPhase != 3) {
+                File importFile = new File(importPath);
+                if (!importFile.exists()) {
+                    JOptionPane.showMessageDialog(window, "Import save file not found.");
+                    return;
                 }
-            } else if (currentPhase == 3) {
-                int count = getComboNumber(playerCountBox);
-
-                for (int i = 0; i < count; i++) {
-                    players.add(new Player(playerFields[i].getText()));
-                }
-            } else if (currentPhase == 4) {
-                int humanCount = getComboNumber(humanCountBox);
-                int aiPosition = getComboNumber(aiPositionBox);
-
-                // Insert the AI at the selected turn position and humans around it.
-                for (int i = 0; i < humanCount + 1; i++) {
-                    if (i == aiPosition - 1) {
-                        players.add(BoggleAI.createAIPlayer("AI", getComboText(phase4DifficultyBox)));
-                    } else {
-                        int humanNumber = i;
-                        if (i > aiPosition - 1) {
-                            humanNumber = i - 1;
+                game = GameSession.loadGame(importFile, dictionaryFile, minimumLength, targetScore);
+                for (Player p : game.players) {
+                    if (currentPhase == 2) {
+                        if (p.name.equalsIgnoreCase("AI")) {
+                            p.isAI = true;
+                            p.difficulty = getComboText(aiDifficultyBox).toUpperCase();
+                        } else {
+                            p.isAI = false;
                         }
-
-                        players.add(new Player(humanFields[humanNumber].getText()));
+                    } else if (currentPhase == 4) {
+                        if (p.name.equalsIgnoreCase("AI")) {
+                            p.isAI = true;
+                            p.difficulty = getComboText(phase4DifficultyBox).toUpperCase();
+                        } else {
+                            p.isAI = false;
+                        }
+                    } else if (currentPhase == 5) {
+                        if (p.name.equalsIgnoreCase("AI 1")) {
+                            p.isAI = true;
+                            p.difficulty = getComboText(ai1DifficultyBox).toUpperCase();
+                        } else if (p.name.equalsIgnoreCase("AI 2")) {
+                            p.isAI = true;
+                            p.difficulty = getComboText(ai2DifficultyBox).toUpperCase();
+                        } else {
+                            p.isAI = false;
+                        }
                     }
                 }
             } else {
-                Player ai1 = BoggleAI.createAIPlayer("AI 1", getComboText(ai1DifficultyBox));
-                Player ai2 = BoggleAI.createAIPlayer("AI 2", getComboText(ai2DifficultyBox));
+                // Build players in the exact order they should take turns.
+                ArrayList<Player> players = new ArrayList<Player>();
 
-                if (phase5FirstBox.getSelectedIndex() == 0) {
-                    players.add(ai1);
-                    players.add(ai2);
+                if (currentPhase == 1) {
+                    players.add(new Player(player1Field.getText()));
+                    players.add(new Player(player2Field.getText()));
+                } else if (currentPhase == 2) {
+                    Player human = new Player(humanField.getText());
+                    Player ai = BoggleAI.createAIPlayer("AI", getComboText(aiDifficultyBox));
+
+                    if (firstPlayerBox.getSelectedIndex() == 0) {
+                        players.add(human);
+                        players.add(ai);
+                    } else {
+                        players.add(ai);
+                        players.add(human);
+                    }
+                } else if (currentPhase == 3) {
+                    int count = getComboNumber(playerCountBox);
+
+                    for (int i = 0; i < count; i++) {
+                        players.add(new Player(playerFields[i].getText()));
+                    }
+                } else if (currentPhase == 4) {
+                    int humanCount = getComboNumber(humanCountBox);
+                    int aiPosition = getComboNumber(aiPositionBox);
+
+                    // Insert the AI at the selected turn position and humans around it.
+                    for (int i = 0; i < humanCount + 1; i++) {
+                        if (i == aiPosition - 1) {
+                            players.add(BoggleAI.createAIPlayer("AI", getComboText(phase4DifficultyBox)));
+                        } else {
+                            int humanNumber = i;
+                            if (i > aiPosition - 1) {
+                                humanNumber = i - 1;
+                            }
+
+                            players.add(new Player(humanFields[humanNumber].getText()));
+                        }
+                    }
                 } else {
-                    players.add(ai2);
-                    players.add(ai1);
+                    Player ai1 = BoggleAI.createAIPlayer("AI 1", getComboText(ai1DifficultyBox));
+                    Player ai2 = BoggleAI.createAIPlayer("AI 2", getComboText(ai2DifficultyBox));
+
+                    if (phase5FirstBox.getSelectedIndex() == 0) {
+                        players.add(ai1);
+                        players.add(ai2);
+                    } else {
+                        players.add(ai2);
+                        players.add(ai1);
+                    }
                 }
+
+                // #region agent log
+                agentLog("H5", "BoggleGUI.startGame", "session about to start",
+                        "{\"phase\":" + currentPhase + ",\"playerCount\":" + players.size() + "}");
+                // #endregion
+
+                // From here onward, GameSession owns the rules and board state.
+                game = new GameSession(players, minimumLength, targetScore, dictionaryFile);
             }
-
-            // #region agent log
-            agentLog("H5", "BoggleGUI.startGame", "session about to start",
-                    "{\"phase\":" + currentPhase + ",\"playerCount\":" + players.size() + "}");
-            // #endregion
-
-            // From here onward, GameSession owns the rules and board state.
-            game = new GameSession(players, minimumLength, targetScore, dictionaryFile);
 
             if (currentPhase == 5 && boardFileField.getText().trim().length() > 0) {
                 // Phase 5 can use a fixed board so both AIs compete on the same letters.
@@ -663,8 +757,10 @@ public class BoggleGUI {
         gamePanel.removeAll();
         gamePanel.setLayout(new BorderLayout(10, 10));
         gamePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        gamePanel.setBackground(boardTileColor);
 
         JPanel top = new JPanel(new GridLayout(2, 1));
+        top.setOpaque(false);
 
         phaseLabel = new JLabel(getPhaseName(currentPhase), SwingConstants.CENTER);
         phaseLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -677,9 +773,11 @@ public class BoggleGUI {
         gamePanel.add(top, BorderLayout.NORTH);
 
         JPanel center = new JPanel(new BorderLayout(10, 10));
+        center.setOpaque(false);
 
         // The board grid uses one JLabel for each letter on the GameSession board.
         JPanel boardPanel = new JPanel(new GridLayout(GameSession.BOARD_SIZE, GameSession.BOARD_SIZE, 5, 5));
+        boardPanel.setOpaque(false);
         boardPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         boardLabels = new JLabel[GameSession.BOARD_SIZE][GameSession.BOARD_SIZE];
@@ -703,12 +801,14 @@ public class BoggleGUI {
         JPanel side = new JPanel();
         side.setLayout(new BoxLayout(side, BoxLayout.Y_AXIS));
         side.setPreferredSize(new Dimension(270, 400));
+        side.setOpaque(false);
 
         currentPlayerLabel = new JLabel("Current Player:");
         timerLabel = new JLabel("Timer:");
         timerLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         scorePanel = new JPanel();
+        scorePanel.setOpaque(false);
         scorePanel.setBorder(BorderFactory.createTitledBorder("Scores"));
 
         wordHistoryArea = new JTextArea();
@@ -731,8 +831,10 @@ public class BoggleGUI {
 
         // The bottom area accepts words and exposes turn actions.
         JPanel bottom = new JPanel(new BorderLayout(5, 5));
+        bottom.setOpaque(false);
 
         JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
+        inputPanel.setOpaque(false);
 
         wordField = new JTextField();
         submitButton = new JButton("Submit");
@@ -741,12 +843,15 @@ public class BoggleGUI {
         inputPanel.add(submitButton, BorderLayout.EAST);
 
         JPanel buttons = new JPanel();
+        buttons.setOpaque(false);
 
         passButton = new JButton("Pass");
         shakeButton = new JButton("Shake Board");
         quitButton = new JButton("Quit");
         hintButton = new JButton("Hint");
         saveButton = new JButton("Save Game");
+        saveButton.setVisible(currentPhase == 2 || currentPhase == 4);
+
 
         buttons.add(passButton);
         buttons.add(shakeButton);
@@ -1154,6 +1259,11 @@ public class BoggleGUI {
         setInput(false);
         updateScores();
 
+        if (saveFile != null) {
+            game.writeLog(saveFile);
+        }
+
+
         Player winner = game.determineWinner();
         String message = "Game ended.\n";
 
@@ -1227,7 +1337,7 @@ public class BoggleGUI {
         passButton.setEnabled(on);
         quitButton.setEnabled(on);
         hintButton.setEnabled(on);
-        saveButton.setEnabled(game != null);
+        saveButton.setEnabled(game != null && on && (currentPhase == 2 || currentPhase == 4));
     }
 
     /** Copies every board letter from GameSession into the board labels. */
@@ -1364,6 +1474,32 @@ public class BoggleGUI {
             return "Phase 4: Multiplayer + AI";
         } else {
             return "Phase 5: AI vs AI Contest";
+        }
+    }
+
+    public void applyColorTheme(Color c) {
+        boardTileColor = c;
+        if (window != null && window.getContentPane() != null) {
+            window.getContentPane().setBackground(c);
+        }
+        if (mainPanel != null) {
+            mainPanel.setBackground(c);
+            mainPanel.setOpaque(true);
+        }
+        if (menuPanel != null) {
+            menuPanel.setBackground(c);
+            menuPanel.setOpaque(true);
+        }
+        if (setupPanel != null) {
+            setupPanel.setBackground(c);
+            setupPanel.setOpaque(true);
+        }
+        if (gamePanel != null) {
+            gamePanel.setBackground(c);
+            gamePanel.setOpaque(true);
+        }
+        if (game != null) {
+            updateBoard();
         }
     }
 

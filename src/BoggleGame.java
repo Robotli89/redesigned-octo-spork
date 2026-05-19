@@ -164,14 +164,16 @@ public class BoggleGame {
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
             System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Shake Up: " + (session.isShakeUpUsed() ? "USED" : "available"));
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            if (timerSeconds > 0) {
+                System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+            }
             System.out.print("Enter word (or PASS / QUIT / HINT): ");
-            String input = sc.nextLine();
-            if (input == null) input = "";
-            input = input.trim();
+            String input = getInputWithTimer(sc, timerSeconds, session);
 
-            if (input.equalsIgnoreCase("QUIT")) {
+            if (input.equals("TIMEOUT_PASS")) {
+                // Timeout pass already handled
+            } else if (input.equalsIgnoreCase("QUIT")) {
                 session.quit();
             } else if (input.equalsIgnoreCase("PASS")) {
                 session.pass();
@@ -223,6 +225,24 @@ public class BoggleGame {
         }
     }
 
+    private static String getInputWithTimer(Scanner sc, int timerSeconds, GameSession session) {
+        long start = System.currentTimeMillis();
+        String input = sc.nextLine();
+        if (input == null) input = "";
+        input = input.trim();
+        if (timerSeconds > 0) {
+            long elapsed = System.currentTimeMillis() - start;
+            if (elapsed > timerSeconds * 1000L) {
+                System.out.println("Time is up! (Took " + (elapsed / 1000.0) + " seconds, limit was " + timerSeconds + " seconds)");
+                session.timeout();
+                return "TIMEOUT_PASS";
+            } else {
+                System.out.println("(Time taken: " + (elapsed / 1000.0) + " seconds)");
+            }
+        }
+        return input;
+    }
+
     public static void announceWinner(GameSession session) {
         Player w = null;
         int bestScore = -1;
@@ -248,6 +268,7 @@ public class BoggleGame {
             Player p = session.players.get(i);
             System.out.println(p.name + " score=" + p.totalScore);
         }
+        session.writeLog(new File("boggleSave.txt"));
     }
 
     public static int readInt(Scanner sc, String prompt, int minValue) {
@@ -284,67 +305,6 @@ public class BoggleGame {
         }
     }
 
-    public static boolean handlePlayerVsAIHumanPassed(Scanner sc, GameSession session) {
-        if (session.targetScore == 0) {
-            Player passer = session.players.get(0);
-            Player other = session.players.get(1);
-            int passScore = passer.totalScore;
-
-            int toOther = session.nextTurn();
-            if (toOther == 2) return true;
-
-            for (;;) {
-                if (other.totalScore > passScore) break;
-
-                if (session.getCurrentPlayer().isAI) {
-                    AIResult rr = session.runAITurnIfNeeded();
-                    if (rr.passed) break;
-                } else {
-                    break;
-                }
-
-                int adv = session.nextTurn();
-                if (adv == 2) break;
-
-                if (!session.getCurrentPlayer().isAI) {
-                    int skip = session.nextTurn();
-                    if (skip == 2) break;
-                }
-            }
-
-            if (offerShakeAfterPassedHuman(sc, session, other)) {
-                return false;
-            }
-
-            return true;
-        }
-
-        if (offerShakeAfterPassedHuman(sc, session, session.players.get(1))) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static boolean offerShakeAfterPassedHuman(Scanner sc, GameSession session, Player aiPlayer) {
-        if (session.isShakeUpUsed()) return false;
-
-        if (aiPlayer != null && aiPlayer.totalScore > session.players.get(0).totalScore) {
-            System.out.println(aiPlayer.name + " is now ahead.");
-        }
-
-        System.out.print("Shake Up? (Y/N): ");
-        String ch = sc.nextLine();
-        if (ch == null) ch = "";
-        ch = ch.trim();
-        if (ch.equalsIgnoreCase("Y")) {
-            session.performShake();
-            session.currentTurnIndex = 0;
-            return true;
-        }
-        return false;
-    }
-
     public static void runPlayerVsAI(Scanner sc, File dictionaryFile) {
         showRules();
 
@@ -370,7 +330,6 @@ public class BoggleGame {
             GameSession.printBoard(session.getBoard());
             System.out.println("Round: " + session.getCurrentRound());
             System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Shake Up: " + (session.isShakeUpUsed() ? "USED" : "available"));
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
 
             if (cur.isAI) {
@@ -381,21 +340,18 @@ public class BoggleGame {
                     System.out.println("AI played: " + r.word + " (+" + r.points + ")");
                 }
             } else {
+                if (timerSeconds > 0) {
+                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                }
                 System.out.print("Enter word (or PASS / QUIT / HINT): ");
-                String input = sc.nextLine();
-                if (input == null) input = "";
-                input = input.trim();
-                if (input.equalsIgnoreCase("QUIT")) {
+                String input = getInputWithTimer(sc, timerSeconds, session);
+                if (input.equals("TIMEOUT_PASS")) {
+                    // Timeout pass already handled
+                } else if (input.equalsIgnoreCase("QUIT")) {
                     session.quit();
                     session.saveIfPvAIQuit(new File(human + "Save.txt"));
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
-                    boolean endNow = handlePlayerVsAIHumanPassed(sc, session);
-                    if (endNow) {
-                        announceWinner(session);
-                        break;
-                    }
-                    continue;
                 } else if (input.equalsIgnoreCase("HINT")) {
                     if (session.isHintUsed()) {
                         System.out.println("Hint already used.");
@@ -419,15 +375,6 @@ public class BoggleGame {
                         System.out.println("Already used. 0 points.");
                     } else {
                         System.out.println("Invalid. 0 points.");
-                    }
-
-                    if (session.players.get(0).passed) {
-                        boolean endNow = handlePlayerVsAIHumanPassed(sc, session);
-                        if (endNow) {
-                            announceWinner(session);
-                            break;
-                        }
-                        continue;
                     }
                 }
             }
@@ -477,14 +424,16 @@ public class BoggleGame {
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
             System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Shake Up: " + (session.isShakeUpUsed() ? "USED" : "available"));
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            if (timerSeconds > 0) {
+                System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+            }
             System.out.print("Enter word (or PASS / QUIT / HINT): ");
-            String input = sc.nextLine();
-            if (input == null) input = "";
-            input = input.trim();
+            String input = getInputWithTimer(sc, timerSeconds, session);
 
-            if (input.equalsIgnoreCase("QUIT")) {
+            if (input.equals("TIMEOUT_PASS")) {
+                // Timeout pass already handled
+            } else if (input.equalsIgnoreCase("QUIT")) {
                 session.quit();
             } else if (input.equalsIgnoreCase("PASS")) {
                 session.pass();
@@ -565,7 +514,6 @@ public class BoggleGame {
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
             System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Shake Up: " + (session.isShakeUpUsed() ? "USED" : "available"));
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
 
             if (cur.isAI) {
@@ -573,12 +521,15 @@ public class BoggleGame {
                 if (r.passed) System.out.println(cur.name + " PASSED");
                 else System.out.println(cur.name + " played: " + r.word + " (+" + r.points + ")");
             } else {
+                if (timerSeconds > 0) {
+                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                }
                 System.out.print("Enter word (or PASS / QUIT / HINT): ");
-                String input = sc.nextLine();
-                if (input == null) input = "";
-                input = input.trim();
+                String input = getInputWithTimer(sc, timerSeconds, session);
 
-                if (input.equalsIgnoreCase("QUIT")) {
+                if (input.equals("TIMEOUT_PASS")) {
+                    // Timeout pass already handled
+                } else if (input.equalsIgnoreCase("QUIT")) {
                     session.quit();
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
@@ -658,7 +609,6 @@ public class BoggleGame {
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
             System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Shake Up: " + (session.isShakeUpUsed() ? "USED" : "available"));
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
 
             if (cur.isAI) {
@@ -666,11 +616,14 @@ public class BoggleGame {
                 if (r.passed) System.out.println("YourAI PASSED");
                 else System.out.println("YourAI played: " + r.word + " (+" + r.points + ")");
             } else {
+                if (timerSeconds > 0) {
+                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                }
                 System.out.print("Opponent move (word or PASS): ");
-                String input = sc.nextLine();
-                if (input == null) input = "";
-                input = input.trim();
-                if (input.equalsIgnoreCase("PASS")) {
+                String input = getInputWithTimer(sc, timerSeconds, session);
+                if (input.equals("TIMEOUT_PASS")) {
+                    // Timeout pass already handled
+                } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
                 } else {
                     int sr = session.submitWord(input);
