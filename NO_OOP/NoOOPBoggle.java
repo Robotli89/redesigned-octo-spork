@@ -9,8 +9,6 @@
  * entering words found on a randomly generated Boggle board. The program checks
  * each word against the board and dictionary, keeps score, supports pass/quit
  * commands, hints, board shake-ups, timers, multiplayer games, and AI players.
- * This version removes the custom object-oriented structure and GUI from the
- * original project, using static methods and arrays instead.
  *
  * Copyright (c) Kevin Li and Ethan Chuang
  */
@@ -257,6 +255,8 @@ public class NoOOPBoggle {
             int current = currentTurnIndex;
 
             if (playerIsAI[current]) {
+                // If the AI is already ahead of a human who passed, stop before it keeps scoring.
+                // This prevents the AI from taking many turns in a row while the human is skipped.
                 if (shouldOfferShakeAfterAILead(current)) {
                     if (!offerShakeAfterAILead(sc, current)) break;
                     continue;
@@ -266,6 +266,8 @@ public class NoOOPBoggle {
                 if (aiResult == 1) System.out.println(playerNames[current] + " PASSED");
                 else System.out.println(playerNames[current] + " played: " + lastAIWord + " (+" + lastAIPoints + ")");
 
+                // After one AI word, check again so the AI cannot run up the score.
+                // If the AI just passed the human's score, the human gets the shake option right away.
                 if (aiResult == 2 && shouldOfferShakeAfterAILead(current)) {
                     if (!offerShakeAfterAILead(sc, current)) break;
                     continue;
@@ -302,6 +304,8 @@ public class NoOOPBoggle {
 
     // In Player vs AI, the human gets one shake chance once the AI passes their score.
     static boolean offerShakeAfterAILead(Scanner sc, int aiIndex) {
+        // Remember which human should restart if they choose to shake.
+        // performShake() clears all pass states, so this saves whose turn should come back next.
         int restartIndex = getPassedHumanIndexBehindAI(aiIndex);
 
         if (shakeUpUsed) {
@@ -314,6 +318,8 @@ public class NoOOPBoggle {
         String answer = readLine(sc).trim();
         if (answer.equalsIgnoreCase("Y")) {
             performShake();
+            // After a shake, return control to the human instead of the AI.
+            // This gives the passed player a fair chance on the new board.
             if (restartIndex >= 0) currentTurnIndex = restartIndex;
             System.out.println("Board was shaken.");
             return true;
@@ -533,6 +539,8 @@ public class NoOOPBoggle {
 
         int start = currentTurnIndex;
         do {
+            // Skip players who passed or quit, but stop if we circle back to the start.
+            // The start check prevents an infinite loop when no player is able to move.
             currentTurnIndex = (currentTurnIndex + 1) % playerCount;
             if (currentTurnIndex == 0) currentRound++;
         } while ((playerQuit[currentTurnIndex] || playerPassed[currentTurnIndex]) && currentTurnIndex != start);
@@ -571,10 +579,14 @@ public class NoOOPBoggle {
         boolean anyPassed = false;
         boolean anyActive = false;
         for (int i = 0; i < playerCount; i++) {
+            // Active means the player is still able to take a turn on this board.
+            // Passed players are inactive until a board shake resets their pass state.
             if (!playerQuit[i] && !playerPassed[i]) anyActive = true;
             if (!playerQuit[i] && playerPassed[i]) anyPassed = true;
         }
 
+        // Everyone passed: offer one board shake, or end if the shake was already used.
+        // Returning 1 tells the menu loop to ask the user instead of ending immediately.
         if (!anyActive && anyPassed) {
             if (!shakeUpUsed) return 1;
             endReason = "NO_MOVES_AFTER_SHAKE";
@@ -598,6 +610,8 @@ public class NoOOPBoggle {
         int passedHumanIndex = -1;
 
         for (int i = 0; i < playerCount; i++) {
+            // Ignore quit players so they do not affect one-human-vs-one-AI detection.
+            // The shake-after-AI-lead rule only applies when exactly one active human and one active AI remain.
             if (playerQuit[i]) continue;
 
             if (playerIsAI[i]) {
@@ -635,6 +649,8 @@ public class NoOOPBoggle {
 
         ArrayList<String> found = findAllValidWords(board, dictionary, minimumWordLength, usedWords);
         String choice = chooseWord(found, playerDifficulty[current]);
+        // No available word means the AI has to pass.
+        // This happens when every valid board word is already used or no dictionary path is possible.
         if (choice == null) {
             processPass(current);
             return 1;
@@ -698,12 +714,16 @@ public class NoOOPBoggle {
         String currentWord = current.toString();
 
         if (!prefixExists(currentWord, dictionaryList)) {
+            // If no dictionary word starts with this prefix, this path cannot become valid.
+            // Stopping early saves time because all longer words from this path would also be invalid.
             current.setLength(lengthBefore);
             return;
         }
 
         visited[r][c] = true;
 
+        // Save complete valid words, but do not add duplicates or already-used words.
+        // The AI later chooses from this list depending on its difficulty.
         if (currentWord.length() >= minLen
                 && checkDictionary(currentWord, dictionaryList)
                 && !contains(wordsAlreadyUsed, currentWord)
@@ -718,6 +738,8 @@ public class NoOOPBoggle {
             }
         }
 
+        // Backtrack so other paths can reuse this square and StringBuilder length.
+        // Without this reset, one search path would accidentally affect the next path.
         visited[r][c] = false;
         current.setLength(lengthBefore);
     }
@@ -743,8 +765,12 @@ public class NoOOPBoggle {
         for (int i = 0; i < aiWordList.size(); i++) sorted.add(aiWordList.get(i));
         insertionSortByLength(sorted);
 
+        // Hard takes the longest word after sorting by length.
+        // Since the list is sorted longest first, index 0 is the strongest choice.
         if (diff.equals("HARD")) return sorted.get(0);
 
+        // Medium picks randomly from the stronger half of possible words.
+        // This makes Medium better than Easy but not always perfect like Hard.
         int top = Math.max(1, sorted.size() / 2);
         return sorted.get(RANDOM.nextInt(top));
     }
@@ -862,6 +888,8 @@ public class NoOOPBoggle {
         if (visited[r][c]) return false;
         if (Character.toUpperCase(boardToCheck[r][c]) != word.charAt(index)) return false;
 
+        // Mark this square so the same cube is not reused in one word.
+        // Boggle rules allow adjacent movement but do not allow using one cube twice.
         visited[r][c] = true;
         for (int dr = -1; dr <= 1; dr++) {
             for (int dc = -1; dc <= 1; dc++) {
@@ -873,6 +901,8 @@ public class NoOOPBoggle {
             }
         }
 
+        // Unmark before returning so other search paths can use this square.
+        // This is the backtracking step for the human word checker.
         visited[r][c] = false;
         return false;
     }
@@ -906,6 +936,8 @@ public class NoOOPBoggle {
         int firstCandidate = -1;
 
         while (low <= high) {
+            // Find the first dictionary word that could alphabetically start with the prefix.
+            // If that first possible word does not start with the prefix, no later word will help.
             int mid = low + (high - low) / 2;
             String midWord = wordList.get(mid);
             if (midWord.compareTo(p) >= 0) {
@@ -971,6 +1003,8 @@ public class NoOOPBoggle {
 
         for (int i = 0; i < playerCount; i++) {
             if (playerQuit[i]) continue;
+            // Count how many players share the best score so ties are reported.
+            // The winner index is still tracked, but bestCount decides whether to print TIED.
             if (playerScores[i] > bestScore) {
                 bestScore = playerScores[i];
                 bestCount = 1;
@@ -1094,6 +1128,8 @@ public class NoOOPBoggle {
 
     // Reads typed input and checks whether it took longer than the selected timer.
     static String getInputWithTimer(Scanner sc, int timerSeconds, boolean allowTimeout) {
+        // This timer measures how long the user took to press Enter.
+        // It is not a live countdown, but it still enforces the chosen time limit after input.
         long start = System.currentTimeMillis();
         String input = readLine(sc).trim();
 
