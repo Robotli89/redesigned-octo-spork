@@ -173,6 +173,35 @@ class GameSession {
         return AIResult.aiPlayed(choice, points);
     }
 
+    public boolean shouldOfferShakeAfterAILead(Player aiPlayer) {
+        return getPassedHumanIndexBehindAI(aiPlayer) >= 0;
+    }
+
+    public int getPassedHumanIndexBehindAI(Player aiPlayer) {
+        if (aiPlayer == null || !aiPlayer.isAI) return -1;
+
+        int aiCount = 0;
+        int humanCount = 0;
+        int passedHumanIndex = -1;
+
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            if (player.quit) continue;
+
+            if (player.isAI) {
+                aiCount++;
+            } else {
+                humanCount++;
+                if (player.passed && aiPlayer.totalScore > player.totalScore) {
+                    passedHumanIndex = i;
+                }
+            }
+        }
+
+        if (aiCount == 1 && humanCount == 1) return passedHumanIndex;
+        return -1;
+    }
+
     public Player determineWinner() {
         if (forcedWinner != null) return forcedWinner;
 

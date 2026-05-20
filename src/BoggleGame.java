@@ -333,11 +333,21 @@ public class BoggleGame {
             System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
 
             if (cur.isAI) {
+                if (session.shouldOfferShakeAfterAILead(cur)) {
+                    if (!offerShakeAfterAILead(sc, session, cur)) break;
+                    continue;
+                }
+
                 AIResult r = session.runAITurnIfNeeded();
                 if (r.passed) {
                     System.out.println("AI PASSED");
                 } else {
                     System.out.println("AI played: " + r.word + " (+" + r.points + ")");
+                }
+
+                if (!r.passed && session.shouldOfferShakeAfterAILead(cur)) {
+                    if (!offerShakeAfterAILead(sc, session, cur)) break;
+                    continue;
                 }
             } else {
                 if (timerSeconds > 0) {
@@ -399,6 +409,31 @@ public class BoggleGame {
                 }
             }
         }
+    }
+
+    public static boolean offerShakeAfterAILead(Scanner sc, GameSession session, Player aiPlayer) {
+        int restartIndex = session.getPassedHumanIndexBehindAI(aiPlayer);
+
+        if (session.isShakeUpUsed()) {
+            System.out.println(aiPlayer.name + " is ahead. Game over.");
+            announceWinner(session);
+            return false;
+        }
+
+        System.out.print(aiPlayer.name + " is now ahead. Shake the board? (Y/N): ");
+        String choice = sc.nextLine();
+        if (choice != null && choice.trim().equalsIgnoreCase("Y")) {
+            session.performShake();
+            if (restartIndex >= 0) {
+                session.currentTurnIndex = restartIndex;
+            }
+            System.out.println("Board was shaken.");
+            return true;
+        }
+
+        System.out.println(aiPlayer.name + " is ahead. Game over.");
+        announceWinner(session);
+        return false;
     }
 
     public static void runMultiplayer(Scanner sc, File dictionaryFile) {

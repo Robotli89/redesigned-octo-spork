@@ -1153,23 +1153,13 @@ public class BoggleGUI {
 
     /** In Player vs AI, stop AI scoring once it has overtaken a passed human. */
     public boolean shouldStopForPassedHuman(Player aiPlayer) {
-        return getPassedHumanIndexBehind(aiPlayer) >= 0;
+        return currentPhase == 2 && game.shouldOfferShakeAfterAILead(aiPlayer);
     }
 
     /** Returns the passed human who should get the next chance after a shake. */
     public int getPassedHumanIndexBehind(Player aiPlayer) {
-        if (currentPhase != 2 || aiPlayer == null || !aiPlayer.isAI) {
-            return -1;
-        }
-
-        for (int i = 0; i < game.players.size(); i++) {
-            Player player = game.players.get(i);
-            if (!player.isAI && !player.quit && player.passed && aiPlayer.totalScore > player.totalScore) {
-                return i;
-            }
-        }
-
-        return -1;
+        if (currentPhase != 2) return -1;
+        return game.getPassedHumanIndexBehindAI(aiPlayer);
     }
 
     /** Offers the passed human a board shake after the AI takes the lead. */
