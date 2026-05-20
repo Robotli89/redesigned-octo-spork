@@ -1,7 +1,7 @@
 /*
  * Author: Kevin Li and Ethan Chuang
- * Date:   May 19, 2026
- * Course: ICS4U
+ * Date:   May 20, 2026
+ * Course: ICS4U1
  * Project: Boggle Game
  *
  * Description:
@@ -17,18 +17,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Scanner;
 
 public class NoOOPBoggle {
     // Shared constants used by the whole program.
-    static final Random RANDOM = new Random();
-    static final int BOARD_SIZE = 5;
-    static final int MAX_PLAYERS = 20;
+    final Random RANDOM = new Random();
+    final int BOARD_SIZE = 5;
+    final int MAX_PLAYERS = 20;
 
     // Boggle dice. Each string represents one die and the letters on its sides.
-    static final String[] DICE = {
+    final String[] DICE = {
             "AAAFRS", "AEEGMU", "CEIILT", "DHHNOT", "FIPRSY",
             "AAEEEE", "AEGMNN", "CEILPT", "DHLNOR", "GORRVW",
             "AAFIRS", "AFIRSY", "CEIPST", "EIIITT", "HIPRRY",
@@ -37,58 +36,65 @@ public class NoOOPBoggle {
     };
 
     // General game settings and turn tracking.
-    static int minimumWordLength;
-    static int targetScore;
-    static int playerCount;
-    static int currentTurnIndex;
-    static int currentRound;
-    static int forcedWinnerIndex;
+    int minimumWordLength;
+    int targetScore;
+    int playerCount;
+    int currentTurnIndex;
+    int currentRound;
+    int forcedWinnerIndex;
 
-    static boolean shakeUpUsed;
-    static boolean hintUsed;
-    static String endReason;
+    boolean shakeUpUsed;
+    boolean hintUsed;
+    String endReason;
 
     // Board, dictionary, and word history for the current game.
-    static char[][] board;
-    static ArrayList<String> dictionary;
-    static ArrayList<String> usedWords;
+    char[][] board;
+    ArrayList<String> dictionary;
+    ArrayList<String> usedWords;
 
     // Parallel arrays store player data without making a Player class.
     // The same index is used for one player's name, score, pass status, etc.
-    static String[] playerNames = new String[MAX_PLAYERS];
-    static int[] playerScores = new int[MAX_PLAYERS];
-    static boolean[] playerPassed = new boolean[MAX_PLAYERS];
-    static boolean[] playerQuit = new boolean[MAX_PLAYERS];
-    static int[] wrongGuessCount = new int[MAX_PLAYERS];
-    static int[] timeoutCount = new int[MAX_PLAYERS];
-    static int[] autoPassWrongCount = new int[MAX_PLAYERS];
-    static int[] autoPassTimerCount = new int[MAX_PLAYERS];
-    static String[] playerWords = new String[MAX_PLAYERS];
-    static boolean[] playerIsAI = new boolean[MAX_PLAYERS];
-    static String[] playerDifficulty = new String[MAX_PLAYERS];
+    String[] playerNames = new String[MAX_PLAYERS];
+    int[] playerScores = new int[MAX_PLAYERS];
+    boolean[] playerPassed = new boolean[MAX_PLAYERS];
+    boolean[] playerQuit = new boolean[MAX_PLAYERS];
+    int[] wrongGuessCount = new int[MAX_PLAYERS];
+    int[] timeoutCount = new int[MAX_PLAYERS];
+    int[] autoPassWrongCount = new int[MAX_PLAYERS];
+    int[] autoPassTimerCount = new int[MAX_PLAYERS];
+    String[] playerWords = new String[MAX_PLAYERS];
+    boolean[] playerIsAI = new boolean[MAX_PLAYERS];
+    String[] playerDifficulty = new String[MAX_PLAYERS];
 
     // Stores the latest AI result so the text interface can print it.
-    static String lastAIWord;
-    static int lastAIPoints;
+    String lastAIWord;
+    int lastAIPoints;
+    boolean backToMenuRequested;
 
     // Program entry point. Shows the main menu and starts the chosen game mode.
     public static void main(String[] args) {
+        NoOOPBoggle game = new NoOOPBoggle();
+        game.runProgram();
+    }
+
+    // Starts the menu after main creates a NoOOPBoggle program object.
+    void runProgram() {
         File dict = findDictionaryFile();
-        if (dict == null) {
+        if (dict == null) { // Checks if the dictionary is not found; creates a default wordlist.txt if not found.
             System.out.println("Dictionary file not found (wordlist.txt).");
             System.out.println("Result: all words will be INVALID and AI will always pass.");
             dict = new File("wordlist.txt");
         }
 
         Scanner sc = new Scanner(System.in);
-        for (;;) {
+        while (true) {
             System.out.println();
-            System.out.println("Boggle - NO OOP text version");
+            System.out.println("Boggle");
             System.out.println("1) Player vs Player");
             System.out.println("2) Player vs AI");
             System.out.println("3) Multiplayer");
             System.out.println("4) Multiplayer + AI");
-            System.out.println("5) AI vs AI");
+            System.out.println("5) AI vs AI"); // work in progress
             System.out.println("0) Exit");
             System.out.print("Choose: ");
 
@@ -98,12 +104,21 @@ public class NoOOPBoggle {
             else if (choice.equals("2")) runPlayerVsAI(sc, dict);
             else if (choice.equals("3")) runMultiplayer(sc, dict);
             else if (choice.equals("4")) runMultiplayerAI(sc, dict);
-            else if (choice.equals("5")) runAIvsAI(sc, dict);
+            else if (choice.equals("5")) {
+                if (showAIvsAIWorkingMessage(sc)) break;
+                continue;
+            }
             else System.out.println("Invalid choice.");
 
+            if (backToMenuRequested) {
+                backToMenuRequested = false;
+                continue;
+            }
+
             if (!choice.equals("0")) {
-                System.out.print("Another round? (Y/N): ");
+                System.out.print("Another round? (Y/N/MENU): ");
                 String again = readLine(sc).trim();
+                if (again.equalsIgnoreCase("MENU")) continue;
                 if (!again.equalsIgnoreCase("Y")) break;
             }
         }
@@ -111,7 +126,7 @@ public class NoOOPBoggle {
     }
 
     // Sets up a two-player human game.
-    static void runPlayerVsPlayer(Scanner sc, File dictionaryFile) {
+    void runPlayerVsPlayer(Scanner sc, File dictionaryFile) {
         showRules();
         resetPlayers();
 
@@ -121,11 +136,11 @@ public class NoOOPBoggle {
         addHumanPlayer(readLine(sc));
 
         setupSession(sc, dictionaryFile);
-        runNormalLoop(sc, false, null);
+        runNormalLoop(sc);
     }
 
     // Sets up one human player against one automatic AI player.
-    static void runPlayerVsAI(Scanner sc, File dictionaryFile) {
+    void runPlayerVsAI(Scanner sc, File dictionaryFile) {
         showRules();
         resetPlayers();
 
@@ -136,11 +151,11 @@ public class NoOOPBoggle {
         addAIPlayer("AI", readLine(sc));
 
         setupSession(sc, dictionaryFile);
-        runNormalLoop(sc, true, human);
+        runNormalLoop(sc);
     }
 
     // Sets up a game with three or more human players.
-    static void runMultiplayer(Scanner sc, File dictionaryFile) {
+    void runMultiplayer(Scanner sc, File dictionaryFile) {
         showRules();
         resetPlayers();
 
@@ -151,11 +166,11 @@ public class NoOOPBoggle {
         }
 
         setupSession(sc, dictionaryFile);
-        runNormalLoop(sc, false, null);
+        runNormalLoop(sc);
     }
 
     // Sets up a game with multiple human players and at least one AI player.
-    static void runMultiplayerAI(Scanner sc, File dictionaryFile) {
+    void runMultiplayerAI(Scanner sc, File dictionaryFile) {
         showRules();
         resetPlayers();
 
@@ -172,61 +187,28 @@ public class NoOOPBoggle {
         }
 
         setupSession(sc, dictionaryFile);
-        runNormalLoop(sc, false, null);
+        runNormalLoop(sc);
     }
 
-    // Runs the AI contest mode where one AI is automatic and the opponent is typed manually.
-    static void runAIvsAI(Scanner sc, File dictionaryFile) {
-        System.out.println("AI vs AI Rules:");
-        System.out.println("- Your AI is automatic.");
-        System.out.println("- Opponent AI move is typed manually.");
+    // AI vs AI is not finished yet, so the menu lets the user leave or go back.
+    boolean showAIvsAIWorkingMessage(Scanner sc) {
         System.out.println();
+        System.out.println("AI vs AI is working in progress.");
+        System.out.println("1) Back to menu");
+        System.out.println("0) Quit");
+        System.out.print("Choose: ");
 
-        resetPlayers();
-        System.out.print("Your AI difficulty (Easy/Medium/Hard): ");
-        addAIPlayer("YourAI", readLine(sc));
-        System.out.print("Opponent AI name: ");
-        addHumanPlayer(readLine(sc));
-
-        setupSession(sc, dictionaryFile);
-
-        for (;;) {
-            printTurnHeader();
-            int current = currentTurnIndex;
-            if (playerIsAI[current]) {
-                int aiResult = runAITurnIfNeeded();
-                if (aiResult == 1) System.out.println(playerNames[current] + " PASSED");
-                else System.out.println(playerNames[current] + " played: " + lastAIWord + " (+" + lastAIPoints + ")");
-            } else {
-                if (readTimerSettingForCurrentGame > 0) {
-                    System.out.println("(Timer limit: " + readTimerSettingForCurrentGame + " seconds)");
-                }
-                System.out.print("Opponent move (word or PASS): ");
-                String input = getInputWithTimer(sc, readTimerSettingForCurrentGame, true);
-                if (input.equals("TIMEOUT_PASS")) {
-                    // Timeout pass already handled.
-                } else if (input.equalsIgnoreCase("PASS")) {
-                    processPass(currentTurnIndex);
-                } else {
-                    int result = submitWord(input);
-                    if (result == 1) System.out.println("Accepted. +" + input.trim().length());
-                    else if (result == 2) System.out.println("Rejected: already used.");
-                    else System.out.println("Rejected: invalid.");
-                }
-            }
-
-            int after = nextTurn();
-            if (after == 2 || after == 1) {
-                announceWinner();
-                break;
-            }
+        String answer = readLine(sc).trim();
+        if (answer.equals("0")) {
+            return true;
         }
+        return false;
     }
 
-    static int readTimerSettingForCurrentGame;
+    int readTimerSettingForCurrentGame;
 
     // Reads the shared game settings and creates a new board/session.
-    static void setupSession(Scanner sc, File dictionaryFile) {
+    void setupSession(Scanner sc, File dictionaryFile) {
         minimumWordLength = readInt(sc, "Minimum word length (>=3): ", 3);
         targetScore = readIntAllowZero(sc, "Target score (0 = no target): ");
         readTimerSettingForCurrentGame = readTimerChoice(sc);
@@ -234,7 +216,7 @@ public class NoOOPBoggle {
     }
 
     // Resets round state, loads the dictionary, and generates the first board.
-    static void startSession(File dictionaryFile) {
+    void startSession(File dictionaryFile) {
         if (minimumWordLength < 3) minimumWordLength = 3;
         if (targetScore < 0) targetScore = 0;
         currentTurnIndex = 0;
@@ -249,8 +231,8 @@ public class NoOOPBoggle {
     }
 
     // Main turn loop for regular modes. It handles human turns, AI turns, and game ending.
-    static void runNormalLoop(Scanner sc, boolean savePvAIQuit, String saveName) {
-        for (;;) {
+    void runNormalLoop(Scanner sc) {
+        while (true) {
             printTurnHeader();
             int current = currentTurnIndex;
 
@@ -276,8 +258,9 @@ public class NoOOPBoggle {
                 if (readTimerSettingForCurrentGame > 0) {
                     System.out.println("(Timer limit: " + readTimerSettingForCurrentGame + " seconds)");
                 }
-                System.out.print("Enter word (or PASS / QUIT / HINT): ");
-                int moveMade = processHumanInput(sc, savePvAIQuit, saveName);
+                System.out.print("Enter word (or PASS / QUIT / MENU / HINT): ");
+                int moveMade = processHumanInput(sc);
+                if (backToMenuRequested) break;
                 if (moveMade == 0) continue;
             }
 
@@ -303,7 +286,7 @@ public class NoOOPBoggle {
     }
 
     // In Player vs AI, the human gets one shake chance once the AI passes their score.
-    static boolean offerShakeAfterAILead(Scanner sc, int aiIndex) {
+    boolean offerShakeAfterAILead(Scanner sc, int aiIndex) {
         // Remember which human should restart if they choose to shake.
         // performShake() clears all pass states, so this saves whose turn should come back next.
         int restartIndex = getPassedHumanIndexBehindAI(aiIndex);
@@ -331,14 +314,17 @@ public class NoOOPBoggle {
     }
 
     // Handles one human command: word submission, pass, quit, hint, or timeout.
-    static int processHumanInput(Scanner sc, boolean savePvAIQuit, String saveName) {
+    int processHumanInput(Scanner sc) {
         String input = getInputWithTimer(sc, readTimerSettingForCurrentGame, true);
         if (input.equals("TIMEOUT_PASS")) {
             return 1;
         }
         if (input.equalsIgnoreCase("QUIT")) {
             processQuit(currentTurnIndex);
-            if (savePvAIQuit) saveGame(new File(safeSaveName(saveName) + "Save.txt"));
+            return 1;
+        }
+        if (input.equalsIgnoreCase("MENU")) {
+            backToMenuRequested = true;
             return 1;
         }
         if (input.equalsIgnoreCase("PASS")) {
@@ -358,16 +344,20 @@ public class NoOOPBoggle {
     }
 
     // Prints the board and the current turn information.
-    static void printTurnHeader() {
+    void printTurnHeader() {
         System.out.println();
         printBoard(board);
         System.out.println("Round: " + currentRound);
         System.out.println("Turn: " + playerNames[currentTurnIndex] + "  Score=" + playerScores[currentTurnIndex]);
-        System.out.println("Hint: " + (hintUsed ? "USED" : "available"));
+        if (hintUsed) {
+            System.out.println("Hint: USED");
+        } else {
+            System.out.println("Hint: available");
+        }
     }
 
     // Prints the rules before a new game starts.
-    static void showRules() {
+    void showRules() {
         System.out.println("Rules:");
         System.out.println("1. Connect adjacent letters (horizontal, vertical, diagonal).");
         System.out.println("2. A cube can only be used once per word.");
@@ -377,7 +367,7 @@ public class NoOOPBoggle {
     }
 
     // Finds and prints one strong valid word, if the hint has not already been used.
-    static void showHint() {
+    void showHint() {
         if (hintUsed) {
             System.out.println("Hint already used.");
             return;
@@ -393,7 +383,7 @@ public class NoOOPBoggle {
     }
 
     // Clears every player slot before setting up a new game.
-    static void resetPlayers() {
+    void resetPlayers() {
         playerCount = 0;
         for (int i = 0; i < MAX_PLAYERS; i++) {
             playerNames[i] = "";
@@ -411,19 +401,24 @@ public class NoOOPBoggle {
     }
 
     // Adds a human player into the next open parallel-array slot.
-    static void addHumanPlayer(String name) {
+    void addHumanPlayer(String name) {
         addPlayer(name, false, "EASY");
     }
 
     // Adds an AI player into the next open parallel-array slot.
-    static void addAIPlayer(String name, String difficulty) {
+    void addAIPlayer(String name, String difficulty) {
         addPlayer(name, true, difficulty);
     }
 
     // Common helper for adding either a human or AI player.
-    static void addPlayer(String name, boolean isAI, String difficulty) {
+    void addPlayer(String name, boolean isAI, String difficulty) {
         if (playerCount >= MAX_PLAYERS) return;
-        String finalName = name == null ? "" : name.trim();
+        String finalName;
+        if (name == null) {
+            finalName = "";
+        } else {
+            finalName = name.trim();
+        }
         if (finalName.length() == 0) finalName = "Player";
         playerNames[playerCount] = finalName;
         playerIsAI[playerCount] = isAI;
@@ -433,7 +428,7 @@ public class NoOOPBoggle {
     }
 
     // Normalizes AI difficulty input so spelling/capitalization mistakes do not crash the game.
-    static String cleanDifficulty(String difficulty) {
+    String cleanDifficulty(String difficulty) {
         if (difficulty == null || difficulty.trim().length() == 0) return "EASY";
         String d = difficulty.trim().toUpperCase();
         if (d.equals("MEDIUM") || d.equals("HARD")) return d;
@@ -441,11 +436,16 @@ public class NoOOPBoggle {
     }
 
     // Checks a submitted word, awards points, and updates the current player's state.
-    static int submitWord(String word) {
+    int submitWord(String word) {
         int current = currentTurnIndex;
         if (playerQuit[current] || playerPassed[current]) return -1;
 
-        String w = word == null ? "" : word.trim().toUpperCase();
+        String w;
+        if (word == null) {
+            w = "";
+        } else {
+            w = word.trim().toUpperCase();
+        }
         boolean ok = isValidWord(w, board, dictionary, minimumWordLength, usedWords);
         if (!ok) {
             processWrongGuess(current);
@@ -464,7 +464,7 @@ public class NoOOPBoggle {
     }
 
     // Adds a word to the player's text history.
-    static void addWordFound(int playerIndex, String word) {
+    void addWordFound(int playerIndex, String word) {
         if (word == null || word.trim().length() == 0) return;
         if (playerWords[playerIndex] == null || playerWords[playerIndex].length() == 0) {
             playerWords[playerIndex] = word;
@@ -474,7 +474,7 @@ public class NoOOPBoggle {
     }
 
     // Tracks wrong guesses. Two wrong guesses cause an automatic pass.
-    static void processWrongGuess(int playerIndex) {
+    void processWrongGuess(int playerIndex) {
         wrongGuessCount[playerIndex]++;
         if (wrongGuessCount[playerIndex] >= 2) {
             wrongGuessCount[playerIndex] = 0;
@@ -491,7 +491,7 @@ public class NoOOPBoggle {
     }
 
     // In one-human-vs-one-AI mode, two wrong guesses can immediately give AI the win.
-    static int findAIWinnerForWrongGuesses(int playerIndex) {
+    int findAIWinnerForWrongGuesses(int playerIndex) {
         if (playerIndex < 0 || playerIndex >= playerCount || playerIsAI[playerIndex]) return -1;
 
         int aiIndex = -1;
@@ -511,12 +511,12 @@ public class NoOOPBoggle {
     }
 
     // Marks a player as passed for the current board.
-    static void processPass(int playerIndex) {
+    void processPass(int playerIndex) {
         playerPassed[playerIndex] = true;
     }
 
     // Applies timeout behavior. A timeout counts as a pass.
-    static void processTimeout(int playerIndex) {
+    void processTimeout(int playerIndex) {
         timeoutCount[playerIndex]++;
         if (timeoutCount[playerIndex] >= 2) {
             timeoutCount[playerIndex] = 0;
@@ -526,13 +526,13 @@ public class NoOOPBoggle {
     }
 
     // Marks a player as quit and records why the game ended.
-    static void processQuit(int playerIndex) {
+    void processQuit(int playerIndex) {
         playerQuit[playerIndex] = true;
         endReason = "OPPONENT_QUIT";
     }
 
     // Moves to the next active player. Returns 0=continue, 1=offer shake, 2=end.
-    static int nextTurn() {
+    int nextTurn() {
         int verified = verifyGameState();
         if (verified == 2) return 2;
         if (verified == 1) return 1;
@@ -549,7 +549,7 @@ public class NoOOPBoggle {
     }
 
     // Checks target score, quits, forced winners, and all-player-pass situations.
-    static int verifyGameState() {
+    int verifyGameState() {
         if (forcedWinnerIndex != -1) {
             if (endReason == null) endReason = "FORCED_WINNER";
             return 2;
@@ -597,12 +597,12 @@ public class NoOOPBoggle {
     }
 
     // Checks whether the AI has overtaken the only human player after that human passed.
-    static boolean shouldOfferShakeAfterAILead(int aiIndex) {
+    boolean shouldOfferShakeAfterAILead(int aiIndex) {
         return getPassedHumanIndexBehindAI(aiIndex) >= 0;
     }
 
     // Returns the passed human's index if a one-human-vs-one-AI shake offer is needed.
-    static int getPassedHumanIndexBehindAI(int aiIndex) {
+    int getPassedHumanIndexBehindAI(int aiIndex) {
         if (aiIndex < 0 || aiIndex >= playerCount || !playerIsAI[aiIndex]) return -1;
 
         int aiCount = 0;
@@ -629,7 +629,7 @@ public class NoOOPBoggle {
     }
 
     // Generates a new board and clears round-only pass/wrong/timer state.
-    static void performShake() {
+    void performShake() {
         usedWords.clear();
         board = generateBoard();
         shakeUpUsed = true;
@@ -641,7 +641,7 @@ public class NoOOPBoggle {
     }
 
     // Runs one AI turn. Return values: 0=not AI, 1=AI passed, 2=AI played a word.
-    static int runAITurnIfNeeded() {
+    int runAITurnIfNeeded() {
         int current = currentTurnIndex;
         lastAIWord = null;
         lastAIPoints = 0;
@@ -671,7 +671,7 @@ public class NoOOPBoggle {
     }
 
     // Searches the board for every valid unused word the AI could play.
-    static ArrayList<String> findAllValidWords(
+    ArrayList<String> findAllValidWords(
             char[][] boardToSearch,
             ArrayList<String> dictionaryList,
             int minWordLength,
@@ -683,7 +683,7 @@ public class NoOOPBoggle {
         if (boardToSearch == null || dictionaryList == null) return found;
 
         boolean[][] visited = new boolean[boardToSearch.length][boardToSearch[0].length];
-        StringBuilder current = new StringBuilder();
+        String current = "";
 
         for (int r = 0; r < boardToSearch.length; r++) {
             for (int c = 0; c < boardToSearch[0].length; c++) {
@@ -695,11 +695,11 @@ public class NoOOPBoggle {
     }
 
     // Recursive board search used by the AI. It builds possible words one letter at a time.
-    static void dfsFindWords(
+    void dfsFindWords(
             char[][] boardToSearch,
             int r,
             int c,
-            StringBuilder current,
+            String current,
             boolean[][] visited,
             ArrayList<String> dictionaryList,
             int minLen,
@@ -709,14 +709,11 @@ public class NoOOPBoggle {
         if (r < 0 || c < 0 || r >= boardToSearch.length || c >= boardToSearch[0].length) return;
         if (visited[r][c]) return;
 
-        int lengthBefore = current.length();
-        current.append(Character.toUpperCase(boardToSearch[r][c]));
-        String currentWord = current.toString();
+        String currentWord = current + Character.toUpperCase(boardToSearch[r][c]);
 
         if (!prefixExists(currentWord, dictionaryList)) {
             // If no dictionary word starts with this prefix, this path cannot become valid.
             // Stopping early saves time because all longer words from this path would also be invalid.
-            current.setLength(lengthBefore);
             return;
         }
 
@@ -734,18 +731,17 @@ public class NoOOPBoggle {
         for (int dr = -1; dr <= 1; dr++) {
             for (int dc = -1; dc <= 1; dc++) {
                 if (dr == 0 && dc == 0) continue;
-                dfsFindWords(boardToSearch, r + dr, c + dc, current, visited, dictionaryList, minLen, wordsAlreadyUsed, output);
+                dfsFindWords(boardToSearch, r + dr, c + dc, currentWord, visited, dictionaryList, minLen, wordsAlreadyUsed, output);
             }
         }
 
-        // Backtrack so other paths can reuse this square and StringBuilder length.
-        // Without this reset, one search path would accidentally affect the next path.
+        // Backtrack so other paths can reuse this square.
+        // currentWord is a separate String, so only the visited square needs to be reset here.
         visited[r][c] = false;
-        current.setLength(lengthBefore);
     }
 
     // Chooses an AI word based on difficulty.
-    static String chooseWord(ArrayList<String> aiWordList, String difficulty) {
+    String chooseWord(ArrayList<String> aiWordList, String difficulty) {
         if (aiWordList == null || aiWordList.isEmpty()) return null;
         String diff = cleanDifficulty(difficulty);
 
@@ -776,7 +772,7 @@ public class NoOOPBoggle {
     }
 
     // Rolls all dice and places them into a shuffled 5x5 board.
-    static char[][] generateBoard() {
+    char[][] generateBoard() {
         char[] letters = new char[DICE.length];
         for (int i = 0; i < DICE.length; i++) {
             int face = RANDOM.nextInt(DICE[i].length());
@@ -795,7 +791,7 @@ public class NoOOPBoggle {
     }
 
     // Fisher-Yates shuffle for the rolled dice letters.
-    static void shuffleCharArray(char[] arr) {
+    void shuffleCharArray(char[] arr) {
         for (int i = arr.length - 1; i > 0; i--) {
             int j = RANDOM.nextInt(i + 1);
             char tmp = arr[i];
@@ -805,7 +801,7 @@ public class NoOOPBoggle {
     }
 
     // Prints the current 5x5 board to the terminal.
-    static void printBoard(char[][] boardToPrint) {
+    void printBoard(char[][] boardToPrint) {
         System.out.println();
         System.out.println("Boggle Board:");
         for (int r = 0; r < boardToPrint.length; r++) {
@@ -818,7 +814,7 @@ public class NoOOPBoggle {
     }
 
     // Loads the word list and sorts it so binary search can be used.
-    static ArrayList<String> loadDictionary(File wordListFile) {
+    ArrayList<String> loadDictionary(File wordListFile) {
         ArrayList<String> words = new ArrayList<String>();
         if (wordListFile == null || !wordListFile.exists()) return words;
 
@@ -838,12 +834,12 @@ public class NoOOPBoggle {
         }
         fileScanner.close();
 
-        Collections.sort(words);
+        insertionSort(words);
         return words;
     }
 
     // A valid word must be long enough, unused, in the dictionary, and possible on the board.
-    static boolean isValidWord(
+    boolean isValidWord(
             String word,
             char[][] boardToCheck,
             ArrayList<String> dictionaryList,
@@ -861,7 +857,7 @@ public class NoOOPBoggle {
     }
 
     // Starts board validation by trying every square that matches the first letter.
-    static boolean findLetter(char[][] boardToCheck, String word) {
+    boolean findLetter(char[][] boardToCheck, String word) {
         if (boardToCheck == null || word == null) return false;
         String w = word.toUpperCase();
         if (w.length() == 0) return false;
@@ -882,7 +878,7 @@ public class NoOOPBoggle {
     }
 
     // Recursive word path checker. A square cannot be reused in the same word.
-    static boolean checkBoard(char[][] boardToCheck, int r, int c, String word, int index, boolean[][] visited) {
+    boolean checkBoard(char[][] boardToCheck, int r, int c, String word, int index, boolean[][] visited) {
         if (index == word.length()) return true;
         if (r < 0 || c < 0 || r >= boardToCheck.length || c >= boardToCheck[0].length) return false;
         if (visited[r][c]) return false;
@@ -908,14 +904,14 @@ public class NoOOPBoggle {
     }
 
     // Looks up an exact word in the sorted dictionary.
-    static boolean checkDictionary(String word, ArrayList<String> wordList) {
+    boolean checkDictionary(String word, ArrayList<String> wordList) {
         if (word == null || wordList == null || wordList.isEmpty()) return false;
         String w = word.toUpperCase();
         return checkDictionary(w, wordList, 0, wordList.size() - 1);
     }
 
     // Binary search helper for dictionary lookup.
-    static boolean checkDictionary(String word, ArrayList<String> wordList, int low, int high) {
+    boolean checkDictionary(String word, ArrayList<String> wordList, int low, int high) {
         if (word == null || wordList == null) return false;
         if (low > high) return false;
 
@@ -927,7 +923,7 @@ public class NoOOPBoggle {
     }
 
     // Checks whether any dictionary word starts with the current AI search prefix.
-    static boolean prefixExists(String prefix, ArrayList<String> wordList) {
+    boolean prefixExists(String prefix, ArrayList<String> wordList) {
         if (prefix == null || prefix.length() == 0 || wordList == null || wordList.isEmpty()) return false;
         String p = prefix.toUpperCase();
 
@@ -953,7 +949,7 @@ public class NoOOPBoggle {
     }
 
     // Scores words by length. Reused words are worth zero.
-    static int calculateScore(String word, ArrayList<String> wordHistory) {
+    int calculateScore(String word, ArrayList<String> wordHistory) {
         if (word == null) return 0;
         String w = word.toUpperCase();
         if (contains(wordHistory, w)) return 0;
@@ -961,7 +957,7 @@ public class NoOOPBoggle {
     }
 
     // Small manual contains check used throughout the program.
-    static boolean contains(ArrayList<String> list, String value) {
+    boolean contains(ArrayList<String> list, String value) {
         if (list == null || value == null) return false;
         for (int i = 0; i < list.size(); i++) {
             if (value.equals(list.get(i))) return true;
@@ -970,7 +966,7 @@ public class NoOOPBoggle {
     }
 
     // Sorts strings alphabetically. Kept as a simple classroom sorting example.
-    static void insertionSort(ArrayList<String> words) {
+    void insertionSort(ArrayList<String> words) {
         for (int i = 1; i < words.size(); i++) {
             String current = words.get(i);
             int j = i - 1;
@@ -983,7 +979,7 @@ public class NoOOPBoggle {
     }
 
     // Sorts AI candidate words from longest to shortest.
-    static void insertionSortByLength(ArrayList<String> words) {
+    void insertionSortByLength(ArrayList<String> words) {
         for (int i = 1; i < words.size(); i++) {
             String current = words.get(i);
             int j = i - 1;
@@ -996,7 +992,7 @@ public class NoOOPBoggle {
     }
 
     // Prints final scores and writes a game summary log.
-    static void announceWinner() {
+    void announceWinner() {
         int winnerIndex = determineWinnerIndex();
         int bestScore = -1;
         int bestCount = 0;
@@ -1017,7 +1013,11 @@ public class NoOOPBoggle {
         if (bestCount > 1) {
             System.out.println("Game ended. Result: TIED");
         } else {
-            System.out.println("Game ended. Winner: " + (winnerIndex == -1 ? "NONE" : playerNames[winnerIndex]));
+            if (winnerIndex == -1) {
+                System.out.println("Game ended. Winner: NONE");
+            } else {
+                System.out.println("Game ended. Winner: " + playerNames[winnerIndex]);
+            }
         }
         for (int i = 0; i < playerCount; i++) {
             System.out.println(playerNames[i] + " score=" + playerScores[i]);
@@ -1026,7 +1026,7 @@ public class NoOOPBoggle {
     }
 
     // Finds the non-quit player with the highest score.
-    static int determineWinnerIndex() {
+    int determineWinnerIndex() {
         if (forcedWinnerIndex != -1) return forcedWinnerIndex;
 
         int best = -1;
@@ -1038,7 +1038,7 @@ public class NoOOPBoggle {
     }
 
     // Appends a readable summary of the completed game to a file.
-    static void writeGameLog(File file) {
+    void writeGameLog(File file) {
         if (file == null) return;
 
         FileWriter writer;
@@ -1052,14 +1052,30 @@ public class NoOOPBoggle {
             int winner = determineWinnerIndex();
             writer.write("--- GAME SUMMARY ---\n");
             writer.write("Time: " + LocalDateTime.now() + "\n");
-            writer.write("Winner: " + (winner == -1 ? "NONE" : playerNames[winner]) + "\n");
-            writer.write("Reason: " + (endReason == null ? "UNKNOWN" : endReason) + "\n");
+            if (winner == -1) {
+                writer.write("Winner: NONE\n");
+            } else {
+                writer.write("Winner: " + playerNames[winner] + "\n");
+            }
+            if (endReason == null) {
+                writer.write("Reason: UNKNOWN\n");
+            } else {
+                writer.write("Reason: " + endReason + "\n");
+            }
             writer.write("Total Rounds: " + currentRound + "\n");
-            writer.write("Shake-ups used: " + (shakeUpUsed ? "YES" : "NO") + "\n");
+            if (shakeUpUsed) {
+                writer.write("Shake-ups used: YES\n");
+            } else {
+                writer.write("Shake-ups used: NO\n");
+            }
 
             for (int i = 0; i < playerCount; i++) {
                 writer.write("Name: " + playerNames[i] + " | Score: " + playerScores[i] + "\n");
-                writer.write("Words Found: " + (playerWords[i] == null ? "" : playerWords[i]) + "\n");
+                if (playerWords[i] == null) {
+                    writer.write("Words Found: \n");
+                } else {
+                    writer.write("Words Found: " + playerWords[i] + "\n");
+                }
                 writer.write("Auto-passes (Wrong Words): " + autoPassWrongCount[i] + "\n");
                 writer.write("Auto-passes (Timer): " + autoPassTimerCount[i] + "\n");
             }
@@ -1075,59 +1091,8 @@ public class NoOOPBoggle {
         }
     }
 
-    // Saves the current game state when the Player vs AI human quits.
-    static boolean saveGame(File file) {
-        if (file == null) return false;
-
-        FileWriter writer;
-        try {
-            writer = new FileWriter(file, false);
-        } catch (Exception e) {
-            return false;
-        }
-
-        try {
-            writer.write("Status: Paused\n");
-            writer.write("CurrentRound: " + currentRound + "\n");
-            writer.write("ShakeUpUsed: " + (shakeUpUsed ? "YES" : "NO") + "\n");
-            writer.write("UsedWords: ");
-            for (int i = 0; i < usedWords.size(); i++) {
-                if (i > 0) writer.write(",");
-                writer.write(usedWords.get(i));
-            }
-            writer.write("\n");
-
-            writer.write("Board:\n");
-            for (int r = 0; r < board.length; r++) {
-                for (int c = 0; c < board[0].length; c++) {
-                    writer.write(String.valueOf(board[r][c]));
-                }
-                writer.write("\n");
-            }
-
-            writer.write("Players:\n");
-            for (int i = 0; i < playerCount; i++) {
-                writer.write(playerNames[i] + "|" + playerScores[i] + "\n");
-            }
-        } catch (Exception e) {
-            try {
-                writer.close();
-            } catch (Exception closeException) {
-                // Nothing else to do.
-            }
-            return false;
-        }
-
-        try {
-            writer.close();
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
     // Reads typed input and checks whether it took longer than the selected timer.
-    static String getInputWithTimer(Scanner sc, int timerSeconds, boolean allowTimeout) {
+    String getInputWithTimer(Scanner sc, int timerSeconds, boolean allowTimeout) {
         // This timer measures how long the user took to press Enter.
         // It is not a live countdown, but it still enforces the chosen time limit after input.
         long start = System.currentTimeMillis();
@@ -1147,8 +1112,8 @@ public class NoOOPBoggle {
     }
 
     // Lets the user choose a timer length for human turns.
-    static int readTimerChoice(Scanner sc) {
-        for (;;) {
+    int readTimerChoice(Scanner sc) {
+        while (true) {
             System.out.println();
             System.out.println("Timer choices:");
             System.out.println("1) None");
@@ -1169,8 +1134,8 @@ public class NoOOPBoggle {
     }
 
     // Reads an integer that must be at least minValue.
-    static int readInt(Scanner sc, String prompt, int minValue) {
-        for (;;) {
+    int readInt(Scanner sc, String prompt, int minValue) {
+        while (true) {
             System.out.print(prompt);
             String value = readLine(sc);
             try {
@@ -1184,8 +1149,8 @@ public class NoOOPBoggle {
     }
 
     // Reads an integer that can be zero but cannot be negative.
-    static int readIntAllowZero(Scanner sc, String prompt) {
-        for (;;) {
+    int readIntAllowZero(Scanner sc, String prompt) {
+        while (true) {
             System.out.print(prompt);
             String value = readLine(sc);
             try {
@@ -1199,19 +1164,13 @@ public class NoOOPBoggle {
     }
 
     // Safe wrapper for nextLine so the program does not crash if input ends.
-    static String readLine(Scanner sc) {
+    String readLine(Scanner sc) {
         if (sc == null || !sc.hasNextLine()) return "";
         return sc.nextLine();
     }
 
-    // Removes characters that could make an unsafe save-file name.
-    static String safeSaveName(String name) {
-        if (name == null || name.trim().length() == 0) return "Player";
-        return name.trim().replaceAll("[^A-Za-z0-9_-]", "_");
-    }
-
     // Finds the dictionary file from common locations.
-    static File findDictionaryFile() {
+    File findDictionaryFile() {
         String[] candidates = {
                 "wordlist.txt",
                 "NO_OOP/wordlist.txt",
