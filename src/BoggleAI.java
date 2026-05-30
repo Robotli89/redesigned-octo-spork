@@ -10,6 +10,16 @@ public class BoggleAI {
             int minimumWordLength,
             ArrayList<String> usedWords
     ) {
+        return findAllValidWords(board, dictionaryList, minimumWordLength, usedWords, 0);
+    }
+
+    public ArrayList<String> findAllValidWords(
+            char[][] board,
+            ArrayList<String> dictionaryList,
+            int minimumWordLength,
+            ArrayList<String> usedWords,
+            int maximumWordLength
+    ) {
         int minLen = minimumWordLength;
         if (minLen < 3) minLen = 3;
         ArrayList<String> found = new ArrayList<String>();
@@ -21,20 +31,25 @@ public class BoggleAI {
 
         for (int r = 0; r < n; r++) {
             for (int c = 0; c < m; c++) {
-                dfs(board, r, c, sb, visited, dictionaryList, minLen, usedWords, found);
+                dfs(board, r, c, sb, visited, dictionaryList, minLen, usedWords, found, maximumWordLength);
             }
         }
 
         return found;
     }
 
-    void dfs(char[][] board, int r,  int c, StringBuilder current, boolean[][] visited, ArrayList<String> dictionary, int minLen, ArrayList<String> usedWords, ArrayList<String> out) {
+    void dfs(char[][] board, int r,  int c, StringBuilder current, boolean[][] visited, ArrayList<String> dictionary, int minLen, ArrayList<String> usedWords, ArrayList<String> out, int maxLen) {
         if (r < 0 || c < 0 || r >= board.length || c >= board[0].length) return;
         if (visited[r][c]) return;
 
         int lenBefore = current.length();
         current.append(Character.toUpperCase(board[r][c]));
         String currentWord = current.toString();
+
+        if (maxLen > 0 && currentWord.length() > maxLen) {
+            current.setLength(lenBefore);
+            return;
+        }
 
         if (!GameSession.prefixExists(currentWord, dictionary)) {
             current.setLength(lenBefore);
@@ -54,7 +69,7 @@ public class BoggleAI {
         for (int dr = -1; dr <= 1; dr++) {
             for (int dc = -1; dc <= 1; dc++) {
                 if (dr == 0 && dc == 0) continue;
-                dfs(board, r + dr, c + dc, current, visited, dictionary, minLen, usedWords, out);
+                dfs(board, r + dr, c + dc, current, visited, dictionary, minLen, usedWords, out, maxLen);
             }
         }
 
@@ -97,7 +112,7 @@ public class BoggleAI {
         for (int i = 1; i < words.size(); i++) {
             String cur = words.get(i);
             int j = i - 1;
-            for (; j >= 0 && words.get(j).length() < cur.length(); ) {
+            while (j >= 0 && words.get(j).length() < cur.length()) {
                 words.set(j + 1, words.get(j));
                 j--;
             }

@@ -110,6 +110,7 @@ public class BoggleGUI {
     // Setup screen input controls.
     public JTextField targetField;
     public JTextField minimumField;
+    public JTextField maximumField;
     public JTextField dictionaryField;
     public JTextField importSaveField;
     public JButton importSaveBrowseButton;
@@ -219,7 +220,7 @@ public class BoggleGUI {
         JButton phase2 = new JButton("Phase 2: Player vs AI");
         JButton phase3 = new JButton("Phase 3: Multiplayer");
         JButton phase4 = new JButton("Phase 4: Multiplayer + AI");
-        JButton phase5 = new JButton("Phase 5: AI vs AI Contest");
+        JButton phase5 = new JButton("Phase 5: AI vs AI");
         JButton quit = new JButton("Quit");
 
         // ActionListeners are the code that runs when a Swing button is clicked.
@@ -297,6 +298,7 @@ public class BoggleGUI {
         // Default values make the form usable without typing every setting.
         targetField = new JTextField("0");
         minimumField = new JTextField("3");
+        maximumField = new JTextField("0");
         String dictDefault = "src/wordlist.txt";
         if (defaultDictionaryFile != null) {
             try {
@@ -327,9 +329,12 @@ public class BoggleGUI {
 
         fields.add(makeTextRow("Point target:", targetField));
         fields.add(makeTextRow("Minimum word length:", minimumField));
+        if (phase == 5) {
+            fields.add(makeTextRow("Maximum word length (0 = no limit):", maximumField));
+        }
 
         JPanel importSaveRow = makeFileBrowseRow("Import Save File (Optional):", importSaveField, importSaveBrowseButton);
-        importSaveRow.setVisible(phase != 1 && phase != 3);
+        importSaveRow.setVisible(phase != 1 && phase != 3 && phase != 5);
         fields.add(importSaveRow);
 
         fields.add(makeComboRow("Turn timer:", timerSelectionBox));
@@ -416,15 +421,11 @@ public class BoggleGUI {
             updateHumanRows();
             updateAIPositions();
         } else if (phase == 5) {
-            ai1DifficultyBox = makeDifficultyBox();
-            ai2DifficultyBox = makeDifficultyBox();
-            phase5FirstBox = new JComboBox<String>(new String[] {"AI 1 first", "AI 2 first"});
-            boardFileField = new JTextField("");
+            phase5FirstBox = new JComboBox<String>(new String[] {"My AI first", "Opponent AI first"});
+            boardFileField = new JTextField("setBoard.txt");
 
-            fields.add(makeComboRow("AI 1 difficulty:", ai1DifficultyBox));
-            fields.add(makeComboRow("AI 2 difficulty:", ai2DifficultyBox));
             fields.add(makeComboRow("Who goes first:", phase5FirstBox));
-            fields.add(makeTextRow("Optional board file:", boardFileField));
+            fields.add(makeTextRow("Board file:", boardFileField));
         }
 
         // A scroll pane keeps the setup screen usable when many player fields exist.
@@ -560,6 +561,10 @@ public class BoggleGUI {
             // Text fields store strings, so numbers must be parsed before use.
             int targetScore = Integer.parseInt(targetField.getText().trim());
             int minimumLength = Integer.parseInt(minimumField.getText().trim());
+            int maximumLength = 0;
+            if (currentPhase == 5) {
+                maximumLength = Integer.parseInt(maximumField.getText().trim());
+            }
             File dictionaryFile = new File(dictionaryField.getText().trim());
             boardTileColor = getSelectedBoardColor();
             saveFile = new File(saveFileField.getText().trim());
@@ -604,6 +609,16 @@ public class BoggleGUI {
                 return;
             }
 
+            if (maximumLength < 0) {
+                JOptionPane.showMessageDialog(window, "Maximum word length cannot be negative.");
+                return;
+            }
+
+            if (maximumLength > 0 && maximumLength < minimumLength) {
+                JOptionPane.showMessageDialog(window, "Maximum word length must be at least the minimum, or 0 for no limit.");
+                return;
+            }
+
             // #region agent log
             agentLog("H4", "BoggleGUI.startGame", "dictionary path check",
                     "{\"exists\":" + dictionaryFile.exists() + ",\"path\":\"" + esc(dictionaryFile.getPath()) + "\"}");
@@ -623,14 +638,15 @@ public class BoggleGUI {
                     JOptionPane.INFORMATION_MESSAGE);
 
             String importPath = importSaveField == null ? "" : importSaveField.getText().trim();
-            if (importPath.length() > 0 && currentPhase != 1 && currentPhase != 3) {
+            if (importPath.length() > 0 && currentPhase != 1 && currentPhase != 3 && currentPhase != 5) {
                 File importFile = new File(importPath);
                 if (!importFile.exists()) {
                     JOptionPane.showMessageDialog(window, "Import save file not found.");
                     return;
                 }
                 game = GameSession.loadGame(importFile, dictionaryFile, minimumLength, targetScore);
-                for (Player p : game.players) {
+                for (int i = 0; i < game.players.size(); i++) {
+                    Player p = game.players.get(i);
                     if (currentPhase == 2) {
                         if (p.name.equalsIgnoreCase("AI")) {
                             p.isAI = true;
@@ -642,16 +658,6 @@ public class BoggleGUI {
                         if (p.name.equalsIgnoreCase("AI")) {
                             p.isAI = true;
                             p.difficulty = getComboText(phase4DifficultyBox).toUpperCase();
-                        } else {
-                            p.isAI = false;
-                        }
-                    } else if (currentPhase == 5) {
-                        if (p.name.equalsIgnoreCase("AI 1")) {
-                            p.isAI = true;
-                            p.difficulty = getComboText(ai1DifficultyBox).toUpperCase();
-                        } else if (p.name.equalsIgnoreCase("AI 2")) {
-                            p.isAI = true;
-                            p.difficulty = getComboText(ai2DifficultyBox).toUpperCase();
                         } else {
                             p.isAI = false;
                         }
@@ -699,15 +705,15 @@ public class BoggleGUI {
                         }
                     }
                 } else {
-                    Player ai1 = BoggleAI.createAIPlayer("AI 1", getComboText(ai1DifficultyBox));
-                    Player ai2 = BoggleAI.createAIPlayer("AI 2", getComboText(ai2DifficultyBox));
+                    Player myAI = BoggleAI.createAIPlayer("My AI", "HARD");
+                    Player opponentAI = new Player("Opponent AI");
 
                     if (phase5FirstBox.getSelectedIndex() == 0) {
-                        players.add(ai1);
-                        players.add(ai2);
+                        players.add(myAI);
+                        players.add(opponentAI);
                     } else {
-                        players.add(ai2);
-                        players.add(ai1);
+                        players.add(opponentAI);
+                        players.add(myAI);
                     }
                 }
 
@@ -717,7 +723,11 @@ public class BoggleGUI {
                 // #endregion
 
                 // From here onward, GameSession owns the rules and board state.
-                game = new GameSession(players, minimumLength, targetScore, dictionaryFile);
+                if (currentPhase == 5) {
+                    game = new GameSession(players, minimumLength, targetScore, dictionaryFile, maximumLength);
+                } else {
+                    game = new GameSession(players, minimumLength, targetScore, dictionaryFile);
+                }
             }
 
             if (currentPhase == 5 && boardFileField.getText().trim().length() > 0) {
@@ -1463,7 +1473,7 @@ public class BoggleGUI {
         } else if (phase == 4) {
             return "Phase 4: Multiplayer + AI";
         } else {
-            return "Phase 5: AI vs AI Contest";
+            return "Phase 5: AI vs AI";
         }
     }
 
@@ -1494,7 +1504,7 @@ public class BoggleGUI {
     }
 
     /**
-     * Reads a board file for the AI contest. The first 25 letters become the
+     * Reads a board file for AI vs AI. The first 25 letters become the
      * 5-by-5 board, read left-to-right and top-to-bottom.
      */
     public char[][] readBoardFile(File file) {

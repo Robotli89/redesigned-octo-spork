@@ -1,20 +1,22 @@
-import javax.swing.SwingUtilities;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+import javax.swing.SwingUtilities;
 
 public class BoggleGame {
+
     public static void main(String[] args) {
         File dict = findDictionaryFile();
         if (dict == null) {
             System.out.println("Dictionary file not found (wordlist.txt).");
-            System.out.println("Result: all words will be INVALID and AI will always pass.");
+            System.out.println(
+                "Result: all words will be INVALID and AI will always pass."
+            );
             dict = new File("wordlist.txt");
         }
 
         Scanner sc = new Scanner(System.in);
-        for (;;) {
+        while (true) {
             System.out.println();
             System.out.println("Boggle — choose interface");
             System.out.println("1) Text version");
@@ -32,11 +34,13 @@ public class BoggleGame {
             }
             if (mode.equals("2")) {
                 final File dictionaryForGui = dict;
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        new BoggleGUI(dictionaryForGui);
+                SwingUtilities.invokeLater(
+                    new Runnable() {
+                        public void run() {
+                            new BoggleGUI(dictionaryForGui);
+                        }
                     }
-                });
+                );
                 return;
             }
             if (!mode.equals("1")) {
@@ -51,7 +55,7 @@ public class BoggleGame {
     }
 
     private static void runTextMode(Scanner sc, File dict) {
-        for (;;) {
+        while (true) {
             System.out.println();
             System.out.println("Boggle Menu");
             System.out.println("1) Player vs Player");
@@ -113,12 +117,17 @@ public class BoggleGame {
         players.add(new Player(p1));
         players.add(new Player(p2));
 
-        GameSession session = new GameSession(players, minLen, target, dictionaryFile);
+        GameSession session = new GameSession(
+            players,
+            minLen,
+            target,
+            dictionaryFile
+        );
         gameLoop(sc, session, timerSeconds);
     }
 
     public static int readTimerChoice(Scanner sc) {
-        for (;;) {
+        while (true) {
             System.out.println();
             System.out.println("Timer choices:");
             System.out.println("1) None");
@@ -145,11 +154,13 @@ public class BoggleGame {
 
     /** Same text as printed by {@link #showRules()}, for GUI dialogs. */
     public static String getRulesText() {
-        return "Rules:\n"
-                + "1. Connect adjacent letters (horizontal, vertical, diagonal).\n"
-                + "2. A cube can only be used once per word.\n"
-                + "3. Wrong word gives no points (2 wrong guesses = auto pass).\n"
-                + "4. If all players pass, you may Shake the Board once.\n";
+        return (
+            "Rules:\n" +
+            "1. Connect adjacent letters (horizontal, vertical, diagonal).\n" +
+            "2. A cube can only be used once per word.\n" +
+            "3. Wrong word gives no points (2 wrong guesses = auto pass).\n" +
+            "4. If all players pass, you may Shake the Board once.\n"
+        );
     }
 
     public static void showRules() {
@@ -157,16 +168,26 @@ public class BoggleGame {
         System.out.println();
     }
 
-    public static void gameLoop(Scanner sc, GameSession session, int timerSeconds) {
-        for (;;) {
+    public static void gameLoop(
+        Scanner sc,
+        GameSession session,
+        int timerSeconds
+    ) {
+        while (true) {
             System.out.println();
             GameSession.printBoard(session.getBoard());
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
-            System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            System.out.println(
+                "Turn: " + cur.name + "  Score=" + cur.totalScore
+            );
+            System.out.println(
+                "Hint: " + (session.isHintUsed() ? "USED" : "available")
+            );
             if (timerSeconds > 0) {
-                System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                System.out.println(
+                    "(Timer limit: " + timerSeconds + " seconds)"
+                );
             }
             System.out.print("Enter word (or PASS / QUIT / HINT): ");
             String input = getInputWithTimer(sc, timerSeconds, session);
@@ -181,12 +202,20 @@ public class BoggleGame {
                 if (session.isHintUsed()) {
                     System.out.println("Hint already used.");
                 } else {
-                    ArrayList<String> words = session.boggleAI.findAllValidWords(
-                            session.getBoard(), session.dictionary, session.minimumWordLength, session.usedWords);
+                    ArrayList<String> words =
+                        session.boggleAI.findAllValidWords(
+                            session.getBoard(),
+                            session.dictionary,
+                            session.minimumWordLength,
+                            session.usedWords
+                        );
                     if (words.isEmpty()) {
                         System.out.println("No hint available.");
                     } else {
-                        String hint = session.boggleAI.chooseWord(words, "HARD");
+                        String hint = session.boggleAI.chooseWord(
+                            words,
+                            "HARD"
+                        );
                         System.out.println("Hint: " + hint);
                         session.markHintUsed();
                     }
@@ -195,7 +224,9 @@ public class BoggleGame {
             } else {
                 int r = session.submitWord(input);
                 if (r == 1) {
-                    System.out.println("Valid! +" + input.trim().length() + " points");
+                    System.out.println(
+                        "Valid! +" + input.trim().length() + " points"
+                    );
                 } else if (r == 2) {
                     System.out.println("Already used. 0 points.");
                 } else {
@@ -225,7 +256,11 @@ public class BoggleGame {
         }
     }
 
-    private static String getInputWithTimer(Scanner sc, int timerSeconds, GameSession session) {
+    private static String getInputWithTimer(
+        Scanner sc,
+        int timerSeconds,
+        GameSession session
+    ) {
         long start = System.currentTimeMillis();
         String input = sc.nextLine();
         if (input == null) input = "";
@@ -233,11 +268,19 @@ public class BoggleGame {
         if (timerSeconds > 0) {
             long elapsed = System.currentTimeMillis() - start;
             if (elapsed > timerSeconds * 1000L) {
-                System.out.println("Time is up! (Took " + (elapsed / 1000.0) + " seconds, limit was " + timerSeconds + " seconds)");
+                System.out.println(
+                    "Time is up! (Took " +
+                        (elapsed / 1000.0) +
+                        " seconds, limit was " +
+                        timerSeconds +
+                        " seconds)"
+                );
                 session.timeout();
                 return "TIMEOUT_PASS";
             } else {
-                System.out.println("(Time taken: " + (elapsed / 1000.0) + " seconds)");
+                System.out.println(
+                    "(Time taken: " + (elapsed / 1000.0) + " seconds)"
+                );
             }
         }
         return input;
@@ -262,7 +305,9 @@ public class BoggleGame {
         if (bestCount > 1) {
             System.out.println("Game ended. Result: TIED");
         } else {
-            System.out.println("Game ended. Winner: " + (w == null ? "NONE" : w.name));
+            System.out.println(
+                "Game ended. Winner: " + (w == null ? "NONE" : w.name)
+            );
         }
         for (int i = 0; i < session.players.size(); i++) {
             Player p = session.players.get(i);
@@ -272,7 +317,7 @@ public class BoggleGame {
     }
 
     public static int readInt(Scanner sc, String prompt, int minValue) {
-        for (;;) {
+        while (true) {
             System.out.print(prompt);
             String s = sc.nextLine();
             try {
@@ -289,7 +334,7 @@ public class BoggleGame {
     }
 
     public static int readIntAllowZero(Scanner sc, String prompt) {
-        for (;;) {
+        while (true) {
             System.out.print(prompt);
             String s = sc.nextLine();
             try {
@@ -301,6 +346,38 @@ public class BoggleGame {
                 }
             } catch (Exception e) {
                 System.out.println("Enter a number.");
+            }
+        }
+    }
+
+    public static int readMaxWordLength(Scanner sc, int minimumWordLength) {
+        while (true) {
+            System.out.print(
+                "Maximum word length (0 or NO LIMIT = no limit): "
+            );
+            String s = sc.nextLine();
+            if (s == null) s = "";
+            s = s.trim();
+            if (
+                s.equals("0") ||
+                s.equalsIgnoreCase("NO LIMIT") ||
+                s.equalsIgnoreCase("NONE")
+            ) {
+                return 0;
+            }
+            try {
+                int v = Integer.parseInt(s);
+                if (v < minimumWordLength) {
+                    System.out.println(
+                        "Must be >= " +
+                            minimumWordLength +
+                            ", or 0 for no limit."
+                    );
+                } else {
+                    return v;
+                }
+            } catch (Exception e) {
+                System.out.println("Enter a number, 0, or NO LIMIT.");
             }
         }
     }
@@ -322,15 +399,24 @@ public class BoggleGame {
         players.add(new Player(human));
         players.add(BoggleAI.createAIPlayer("AI", diff));
 
-        GameSession session = new GameSession(players, minLen, target, dictionaryFile);
+        GameSession session = new GameSession(
+            players,
+            minLen,
+            target,
+            dictionaryFile
+        );
 
-        for (;;) {
+        while (true) {
             Player cur = session.getCurrentPlayer();
             System.out.println();
             GameSession.printBoard(session.getBoard());
             System.out.println("Round: " + session.getCurrentRound());
-            System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            System.out.println(
+                "Turn: " + cur.name + "  Score=" + cur.totalScore
+            );
+            System.out.println(
+                "Hint: " + (session.isHintUsed() ? "USED" : "available")
+            );
 
             if (cur.isAI) {
                 if (session.shouldOfferShakeAfterAILead(cur)) {
@@ -342,7 +428,9 @@ public class BoggleGame {
                 if (r.passed) {
                     System.out.println("AI PASSED");
                 } else {
-                    System.out.println("AI played: " + r.word + " (+" + r.points + ")");
+                    System.out.println(
+                        "AI played: " + r.word + " (+" + r.points + ")"
+                    );
                 }
 
                 if (!r.passed && session.shouldOfferShakeAfterAILead(cur)) {
@@ -351,7 +439,9 @@ public class BoggleGame {
                 }
             } else {
                 if (timerSeconds > 0) {
-                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                    System.out.println(
+                        "(Timer limit: " + timerSeconds + " seconds)"
+                    );
                 }
                 System.out.print("Enter word (or PASS / QUIT / HINT): ");
                 String input = getInputWithTimer(sc, timerSeconds, session);
@@ -366,12 +456,20 @@ public class BoggleGame {
                     if (session.isHintUsed()) {
                         System.out.println("Hint already used.");
                     } else {
-                        ArrayList<String> words = session.boggleAI.findAllValidWords(
-                                session.getBoard(), session.dictionary, session.minimumWordLength, session.usedWords);
+                        ArrayList<String> words =
+                            session.boggleAI.findAllValidWords(
+                                session.getBoard(),
+                                session.dictionary,
+                                session.minimumWordLength,
+                                session.usedWords
+                            );
                         if (words.isEmpty()) {
                             System.out.println("No hint available.");
                         } else {
-                            String hint = session.boggleAI.chooseWord(words, "HARD");
+                            String hint = session.boggleAI.chooseWord(
+                                words,
+                                "HARD"
+                            );
                             System.out.println("Hint: " + hint);
                             session.markHintUsed();
                         }
@@ -380,7 +478,9 @@ public class BoggleGame {
                 } else {
                     int sr = session.submitWord(input);
                     if (sr == 1) {
-                        System.out.println("Valid! +" + input.trim().length() + " points");
+                        System.out.println(
+                            "Valid! +" + input.trim().length() + " points"
+                        );
                     } else if (sr == 2) {
                         System.out.println("Already used. 0 points.");
                     } else {
@@ -411,7 +511,11 @@ public class BoggleGame {
         }
     }
 
-    public static boolean offerShakeAfterAILead(Scanner sc, GameSession session, Player aiPlayer) {
+    public static boolean offerShakeAfterAILead(
+        Scanner sc,
+        GameSession session,
+        Player aiPlayer
+    ) {
         int restartIndex = session.getPassedHumanIndexBehindAI(aiPlayer);
 
         if (session.isShakeUpUsed()) {
@@ -420,7 +524,9 @@ public class BoggleGame {
             return false;
         }
 
-        System.out.print(aiPlayer.name + " is now ahead. Shake the board? (Y/N): ");
+        System.out.print(
+            aiPlayer.name + " is now ahead. Shake the board? (Y/N): "
+        );
         String choice = sc.nextLine();
         if (choice != null && choice.trim().equalsIgnoreCase("Y")) {
             session.performShake();
@@ -451,17 +557,28 @@ public class BoggleGame {
             players.add(new Player(name));
         }
 
-        GameSession session = new GameSession(players, minLen, target, dictionaryFile);
+        GameSession session = new GameSession(
+            players,
+            minLen,
+            target,
+            dictionaryFile
+        );
 
-        for (;;) {
+        while (true) {
             System.out.println();
             GameSession.printBoard(session.getBoard());
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
-            System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            System.out.println(
+                "Turn: " + cur.name + "  Score=" + cur.totalScore
+            );
+            System.out.println(
+                "Hint: " + (session.isHintUsed() ? "USED" : "available")
+            );
             if (timerSeconds > 0) {
-                System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                System.out.println(
+                    "(Timer limit: " + timerSeconds + " seconds)"
+                );
             }
             System.out.print("Enter word (or PASS / QUIT / HINT): ");
             String input = getInputWithTimer(sc, timerSeconds, session);
@@ -476,12 +593,20 @@ public class BoggleGame {
                 if (session.isHintUsed()) {
                     System.out.println("Hint already used.");
                 } else {
-                    ArrayList<String> words = session.boggleAI.findAllValidWords(
-                            session.getBoard(), session.dictionary, session.minimumWordLength, session.usedWords);
+                    ArrayList<String> words =
+                        session.boggleAI.findAllValidWords(
+                            session.getBoard(),
+                            session.dictionary,
+                            session.minimumWordLength,
+                            session.usedWords
+                        );
                     if (words.isEmpty()) {
                         System.out.println("No hint available.");
                     } else {
-                        String hint = session.boggleAI.chooseWord(words, "HARD");
+                        String hint = session.boggleAI.chooseWord(
+                            words,
+                            "HARD"
+                        );
                         System.out.println("Hint: " + hint);
                         session.markHintUsed();
                     }
@@ -490,7 +615,9 @@ public class BoggleGame {
             } else {
                 int sr = session.submitWord(input);
                 if (sr == 1) {
-                    System.out.println("Valid! +" + input.trim().length() + " points");
+                    System.out.println(
+                        "Valid! +" + input.trim().length() + " points"
+                    );
                 } else if (sr == 2) {
                     System.out.println("Already used. 0 points.");
                 } else {
@@ -508,7 +635,9 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All active players passed. Shake Up? (Y/N): ");
+                System.out.print(
+                    "All active players passed. Shake Up? (Y/N): "
+                );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -536,28 +665,43 @@ public class BoggleGame {
             players.add(new Player(name));
         }
         for (int i = 0; i < aiCount; i++) {
-            System.out.print("AI #" + (i + 1) + " difficulty (Easy/Medium/Hard): ");
+            System.out.print(
+                "AI #" + (i + 1) + " difficulty (Easy/Medium/Hard): "
+            );
             String diff = sc.nextLine();
             players.add(BoggleAI.createAIPlayer("AI" + (i + 1), diff));
         }
 
-        GameSession session = new GameSession(players, minLen, target, dictionaryFile);
+        GameSession session = new GameSession(
+            players,
+            minLen,
+            target,
+            dictionaryFile
+        );
 
-        for (;;) {
+        while (true) {
             System.out.println();
             GameSession.printBoard(session.getBoard());
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
-            System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            System.out.println(
+                "Turn: " + cur.name + "  Score=" + cur.totalScore
+            );
+            System.out.println(
+                "Hint: " + (session.isHintUsed() ? "USED" : "available")
+            );
 
             if (cur.isAI) {
                 AIResult r = session.runAITurnIfNeeded();
                 if (r.passed) System.out.println(cur.name + " PASSED");
-                else System.out.println(cur.name + " played: " + r.word + " (+" + r.points + ")");
+                else System.out.println(
+                    cur.name + " played: " + r.word + " (+" + r.points + ")"
+                );
             } else {
                 if (timerSeconds > 0) {
-                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
+                    System.out.println(
+                        "(Timer limit: " + timerSeconds + " seconds)"
+                    );
                 }
                 System.out.print("Enter word (or PASS / QUIT / HINT): ");
                 String input = getInputWithTimer(sc, timerSeconds, session);
@@ -572,12 +716,20 @@ public class BoggleGame {
                     if (session.isHintUsed()) {
                         System.out.println("Hint already used.");
                     } else {
-                        ArrayList<String> words = session.boggleAI.findAllValidWords(
-                                session.getBoard(), session.dictionary, session.minimumWordLength, session.usedWords);
+                        ArrayList<String> words =
+                            session.boggleAI.findAllValidWords(
+                                session.getBoard(),
+                                session.dictionary,
+                                session.minimumWordLength,
+                                session.usedWords
+                            );
                         if (words.isEmpty()) {
                             System.out.println("No hint available.");
                         } else {
-                            String hint = session.boggleAI.chooseWord(words, "HARD");
+                            String hint = session.boggleAI.chooseWord(
+                                words,
+                                "HARD"
+                            );
                             System.out.println("Hint: " + hint);
                             session.markHintUsed();
                         }
@@ -586,7 +738,9 @@ public class BoggleGame {
                 } else {
                     int sr = session.submitWord(input);
                     if (sr == 1) {
-                        System.out.println("Valid! +" + input.trim().length() + " points");
+                        System.out.println(
+                            "Valid! +" + input.trim().length() + " points"
+                        );
                     } else if (sr == 2) {
                         System.out.println("Already used. 0 points.");
                     } else {
@@ -605,7 +759,9 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All active players passed. Shake Up? (Y/N): ");
+                System.out.print(
+                    "All active players passed. Shake Up? (Y/N): "
+                );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -619,51 +775,94 @@ public class BoggleGame {
 
     public static void runAIvsAI(Scanner sc, File dictionaryFile) {
         System.out.println("AI vs AI Rules:");
-        System.out.println("- Both AIs use the same dictionary and same board.");
-        System.out.println("- Your AI is automatic. Opponent AI move is typed manually.");
+        System.out.println(
+            "- Put the 5x5 board letters in setBoard.txt before starting."
+        );
+        System.out.println("- My AI automatically uses the best AI setting.");
+        System.out.println(
+            "- Type the opponent AI's word manually to stay synced."
+        );
         System.out.println();
 
-        System.out.print("Your AI difficulty (Easy/Medium/Hard): ");
-        String yourDiff = sc.nextLine();
-        System.out.print("Opponent AI name: ");
-        String oppName = sc.nextLine();
+        File boardFile = findSetBoardFile();
+        char[][] fixedBoard = readBoardFile(boardFile);
+        if (fixedBoard == null) {
+            System.out.println(
+                "Could not read a valid 5x5 board from setBoard.txt."
+            );
+            System.out.println(
+                "Use 25 letters, with or without spaces/line breaks."
+            );
+            return;
+        }
 
         int minLen = readInt(sc, "Minimum word length (>=3): ", 3);
-        int target = readIntAllowZero(sc, "Target score (0 = no target): ");
-        int timerSeconds = readTimerChoice(sc);
+        int maxLen = readMaxWordLength(sc, minLen);
+
+        System.out.println("Who goes first?");
+        System.out.println("1) My AI");
+        System.out.println("2) Opponent AI");
+        System.out.print("Choose: ");
+        String first = sc.nextLine();
+        if (first == null) first = "";
+        first = first.trim();
+
+        Player myAI = BoggleAI.createAIPlayer("My AI", "HARD");
+        Player opponentAI = new Player("Opponent AI");
 
         ArrayList<Player> players = new ArrayList<Player>();
-        players.add(BoggleAI.createAIPlayer("YourAI", yourDiff));
-        players.add(new Player(oppName));
+        if (first.equals("2")) {
+            players.add(opponentAI);
+            players.add(myAI);
+        } else {
+            players.add(myAI);
+            players.add(opponentAI);
+        }
 
-        GameSession session = new GameSession(players, minLen, target, dictionaryFile);
+        GameSession session = new GameSession(
+            players,
+            minLen,
+            0,
+            dictionaryFile,
+            maxLen
+        );
+        session.board = fixedBoard;
 
-        for (;;) {
+        while (true) {
             System.out.println();
             GameSession.printBoard(session.getBoard());
             Player cur = session.getCurrentPlayer();
             System.out.println("Round: " + session.getCurrentRound());
-            System.out.println("Turn: " + cur.name + "  Score=" + cur.totalScore);
-            System.out.println("Hint: " + (session.isHintUsed() ? "USED" : "available"));
+            System.out.println(
+                "Turn: " + cur.name + "  Score=" + cur.totalScore
+            );
+            if (maxLen > 0) {
+                System.out.println("Word length: " + minLen + " to " + maxLen);
+            } else {
+                System.out.println("Word length: " + minLen + "+");
+            }
 
             if (cur.isAI) {
                 AIResult r = session.runAITurnIfNeeded();
-                if (r.passed) System.out.println("YourAI PASSED");
-                else System.out.println("YourAI played: " + r.word + " (+" + r.points + ")");
+                if (r.passed) System.out.println("My AI PASSED");
+                else System.out.println(
+                    "My AI played: " + r.word + " (+" + r.points + ")"
+                );
             } else {
-                if (timerSeconds > 0) {
-                    System.out.println("(Timer limit: " + timerSeconds + " seconds)");
-                }
-                System.out.print("Opponent move (word or PASS): ");
-                String input = getInputWithTimer(sc, timerSeconds, session);
-                if (input.equals("TIMEOUT_PASS")) {
-                    // Timeout pass already handled
+                System.out.print("Opponent AI move (word or PASS / QUIT): ");
+                String input = sc.nextLine();
+                if (input == null) input = "";
+                input = input.trim();
+                if (input.equalsIgnoreCase("QUIT")) {
+                    session.quit();
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
                 } else {
                     int sr = session.submitWord(input);
                     if (sr == 1) {
-                        System.out.println("Accepted. +" + input.trim().length());
+                        System.out.println(
+                            "Accepted. +" + input.trim().length()
+                        );
                     } else if (sr == 2) {
                         System.out.println("Rejected: already used.");
                     } else {
@@ -684,13 +883,59 @@ public class BoggleGame {
         }
     }
 
+    public static char[][] readBoardFile(File file) {
+        try {
+            if (file == null || !file.exists()) return null;
+
+            Scanner scanner = new Scanner(file);
+            String letters = "";
+            while (scanner.hasNext()) {
+                letters = letters + scanner.next();
+            }
+            scanner.close();
+
+            letters = letters.toUpperCase();
+            int need = GameSession.BOARD_SIZE * GameSession.BOARD_SIZE;
+            if (letters.length() < need) return null;
+
+            char[][] board =
+                new char[GameSession.BOARD_SIZE][GameSession.BOARD_SIZE];
+            int index = 0;
+            for (int r = 0; r < GameSession.BOARD_SIZE; r++) {
+                for (int c = 0; c < GameSession.BOARD_SIZE; c++) {
+                    char ch = letters.charAt(index);
+                    if (ch < 'A' || ch > 'Z') return null;
+                    board[r][c] = ch;
+                    index++;
+                }
+            }
+            return board;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static File findSetBoardFile() {
+        String[] candidates = new String[] {
+            "setBoard.txt",
+            "../setBoard.txt",
+            "src/setBoard.txt",
+            "NO_OOP/setBoard.txt",
+        };
+        for (int i = 0; i < candidates.length; i++) {
+            File f = new File(candidates[i]);
+            if (f.exists()) return f;
+        }
+        return new File("setBoard.txt");
+    }
+
     public static File findDictionaryFile() {
         String[] candidates = new String[] {
-                "src/wordlist.txt",
-                "wordlist.txt",
-                "BoggleAssignment/redesigned-octo-spork/src/wordlist.txt",
-                "BoggleAssignment/wordlist.txt",
-                "redesigned-octo-spork/src/wordlist.txt"
+            "src/wordlist.txt",
+            "wordlist.txt",
+            "BoggleAssignment/redesigned-octo-spork/src/wordlist.txt",
+            "BoggleAssignment/wordlist.txt",
+            "redesigned-octo-spork/src/wordlist.txt",
         };
         for (int i = 0; i < candidates.length; i++) {
             File f = new File(candidates[i]);

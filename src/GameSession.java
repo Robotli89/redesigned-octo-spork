@@ -18,6 +18,7 @@ class GameSession {
     };
 
     public int minimumWordLength;
+    public int maximumWordLength;
     public int targetScore;
 
     public ArrayList<Player> players;
@@ -40,8 +41,20 @@ class GameSession {
             int target,
             File dictionaryFile
     ) {
+        this(playerList, minWordLen, target, dictionaryFile, 0);
+    }
+
+    public GameSession(
+            ArrayList<Player> playerList,
+            int minWordLen,
+            int target,
+            File dictionaryFile,
+            int maxWordLen
+    ) {
         minimumWordLength = minWordLen;
         if (minWordLen < 3) minimumWordLength = 3;
+        maximumWordLength = maxWordLen;
+        if (maximumWordLength > 0 && maximumWordLength < minimumWordLength) maximumWordLength = minimumWordLength;
         targetScore = target;
         if (target < 0) targetScore = 0;
         if (playerList == null || playerList.isEmpty()) playerList = new ArrayList<Player>();
@@ -95,7 +108,7 @@ class GameSession {
         if (p.quit || p.passed) return -1;
 
         String w = word == null ? "" : word.trim().toUpperCase();
-        boolean ok = isValidWord(w, board, dictionary, minimumWordLength, usedWords);
+        boolean ok = isValidWord(w, board, dictionary, minimumWordLength, maximumWordLength, usedWords);
         if (!ok) {
             processWrongGuess(p);
             return 0;
@@ -154,7 +167,7 @@ class GameSession {
         Player p = getCurrentPlayer();
         if (p.isAI == false) return AIResult.notAiTurn();
 
-        ArrayList<String> found = boggleAI.findAllValidWords(board, dictionary, minimumWordLength, usedWords);
+        ArrayList<String> found = boggleAI.findAllValidWords(board, dictionary, minimumWordLength, usedWords, maximumWordLength);
         String choice = boggleAI.chooseWord(found, p.difficulty);
         if (choice == null) {
             pass();
@@ -206,7 +219,8 @@ class GameSession {
         if (forcedWinner != null) return forcedWinner;
 
         Player best = null;
-        for (Player p : players) {
+        for (int i = 0; i < players.size(); i++) {
+            Player p = players.get(i);
             if (p.quit) continue;
             if (best == null || p.totalScore > best.totalScore) best = p;
         }
@@ -371,9 +385,9 @@ class GameSession {
 
     public static void printBoard(char[][] board) {
         System.out.println("\nBoggle Board:");
-        for (char[] row : board) {
-            for (char ch : row) {
-                System.out.print(ch + " ");
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                System.out.print(board[row][col] + " ");
             }
             System.out.println();
         }
@@ -389,7 +403,7 @@ class GameSession {
         } catch (Exception e) {
             return words;
         }
-        for (; sc.hasNextLine(); ) {
+        while (sc.hasNextLine()) {
             String w = sc.nextLine();
             if (w != null) {
                 w = w.trim();
@@ -408,7 +422,7 @@ class GameSession {
         for (int i = 1; i < words.size(); i++) {
             String cur = words.get(i);
             int j = i - 1;
-            for (; j >= 0 && words.get(j).compareTo(cur) > 0; ) {
+            while (j >= 0 && words.get(j).compareTo(cur) > 0) {
                 words.set(j + 1, words.get(j));
                 j--;
             }
@@ -518,11 +532,23 @@ class GameSession {
             int minWordLength,
             ArrayList<String> usedWords
     ) {
+        return isValidWord(word, board, dictionary, minWordLength, 0, usedWords);
+    }
+
+    public static boolean isValidWord(
+            String word,
+            char[][] board,
+            ArrayList<String> dictionary,
+            int minWordLength,
+            int maxWordLength,
+            ArrayList<String> usedWords
+    ) {
         if (word == null) return false;
         String w = word.trim().toUpperCase();
         int minLen = minWordLength;
         if (minLen < 3) minLen = 3;
         if (w.length() < minLen) return false;
+        if (maxWordLength > 0 && w.length() > maxWordLength) return false;
         if (contains(usedWords, w)) return false;
         if (!checkDictionary(w, dictionary)) return false;
         return findLetter(board, w);
@@ -655,7 +681,8 @@ class GameSession {
                     String val = line.substring("UsedWords:".length()).trim();
                     if (!val.isEmpty()) {
                         String[] parts = val.split(",");
-                        for (String part : parts) {
+                        for (int i = 0; i < parts.length; i++) {
+                            String part = parts[i];
                             if (!part.trim().isEmpty()) {
                                 loadedUsedWords.add(part.trim().toUpperCase());
                             }
