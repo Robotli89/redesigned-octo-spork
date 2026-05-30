@@ -333,8 +333,8 @@ public class NoOOPBoggle {
                 } else {
                     int result = submitWord(input);
                     if (result == 1) System.out.println("Accepted. +" + input.trim().length());
-                    else if (result == 2) System.out.println("Rejected: already used.");
-                    else System.out.println("Rejected: invalid.");
+                    else if (result == 2) System.out.println("Rejected: used before.");
+                    else System.out.println("Rejected: invalid word. Check length, dictionary, and board path.");
                 }
             }
 
@@ -403,8 +403,8 @@ public class NoOOPBoggle {
 
         int result = submitWord(input);
         if (result == 1) System.out.println("Valid! +" + input.trim().length() + " points");
-        else if (result == 2) System.out.println("Already used. 0 points.");
-        else System.out.println("Invalid. 0 points.");
+        else if (result == 2) System.out.println("Used before. 0 points.");
+        else System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
         return 1;
     }
 
@@ -558,6 +558,10 @@ public class NoOOPBoggle {
         } else {
             w = word.trim().toUpperCase();
         }
+        if (contains(usedWords, w)) {
+            return 2;
+        }
+
         boolean ok = isValidWord(w, board, dictionary, minimumWordLength, maximumWordLength, usedWords);
         if (!ok) {
             processWrongGuess(current);

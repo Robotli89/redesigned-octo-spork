@@ -1038,7 +1038,7 @@ public class BoggleGUI {
             updateScores();
             afterTurn();
         } else if (result == 2) {
-            statusLabel.setText("Already used word.");
+            statusLabel.setText("That word was used before.");
             // Used words do not end the turn, so resume the timer.
             startTimer();
         } else {
@@ -1049,13 +1049,13 @@ public class BoggleGUI {
                 statusLabel.setText("Two wrong guesses. " + game.forcedWinner.name + " wins.");
                 afterTurn();
             } else if (currentPhase == 2 && !player.isAI) {
-                statusLabel.setText("Wrong word: " + word + ". AI's turn.");
+                statusLabel.setText("Invalid word: " + word + ". AI's turn.");
                 afterTurn();
             } else if (player.passed) {
                 statusLabel.setText("Too many wrong guesses. Turn passed.");
                 afterTurn();
             } else {
-                statusLabel.setText("Invalid word. Try again.");
+                statusLabel.setText("Invalid word. Check length, dictionary, and board path.");
                 startTimer();
             }
         }

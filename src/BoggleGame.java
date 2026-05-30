@@ -228,9 +228,9 @@ public class BoggleGame {
                         "Valid! +" + input.trim().length() + " points"
                     );
                 } else if (r == 2) {
-                    System.out.println("Already used. 0 points.");
+                    System.out.println("Used before. 0 points.");
                 } else {
-                    System.out.println("Invalid. 0 points.");
+                    System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
                 }
             }
 
@@ -482,9 +482,9 @@ public class BoggleGame {
                             "Valid! +" + input.trim().length() + " points"
                         );
                     } else if (sr == 2) {
-                        System.out.println("Already used. 0 points.");
+                        System.out.println("Used before. 0 points.");
                     } else {
-                        System.out.println("Invalid. 0 points.");
+                        System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
                     }
                 }
             }
@@ -619,9 +619,9 @@ public class BoggleGame {
                         "Valid! +" + input.trim().length() + " points"
                     );
                 } else if (sr == 2) {
-                    System.out.println("Already used. 0 points.");
+                    System.out.println("Used before. 0 points.");
                 } else {
-                    System.out.println("Invalid. 0 points.");
+                    System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
                 }
             }
 
@@ -742,9 +742,9 @@ public class BoggleGame {
                             "Valid! +" + input.trim().length() + " points"
                         );
                     } else if (sr == 2) {
-                        System.out.println("Already used. 0 points.");
+                        System.out.println("Used before. 0 points.");
                     } else {
-                        System.out.println("Invalid. 0 points.");
+                        System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
                     }
                 }
             }
@@ -864,9 +864,9 @@ public class BoggleGame {
                             "Accepted. +" + input.trim().length()
                         );
                     } else if (sr == 2) {
-                        System.out.println("Rejected: already used.");
+                        System.out.println("Rejected: used before.");
                     } else {
-                        System.out.println("Rejected: invalid.");
+                        System.out.println("Rejected: invalid word. Check length, dictionary, and board path.");
                     }
                 }
             }

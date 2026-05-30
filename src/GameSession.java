@@ -108,6 +108,10 @@ class GameSession {
         if (p.quit || p.passed) return -1;
 
         String w = word == null ? "" : word.trim().toUpperCase();
+        if (contains(usedWords, w)) {
+            return 2;
+        }
+
         boolean ok = isValidWord(w, board, dictionary, minimumWordLength, maximumWordLength, usedWords);
         if (!ok) {
             processWrongGuess(p);
