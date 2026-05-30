@@ -200,7 +200,7 @@ public class BoggleGame {
                 session.pass();
             } else if (input.equalsIgnoreCase("HINT")) {
                 if (session.isHintUsed()) {
-                    System.out.println("Hint already used.");
+                    System.out.println("Hint can only be used once per game.");
                 } else {
                     ArrayList<String> words =
                         session.boggleAI.findAllValidWords(
@@ -244,7 +244,7 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All passed. Shake Up? (Y/N): ");
+                System.out.print("All players passed. Shake the board? (Y/N): ");
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -454,7 +454,7 @@ public class BoggleGame {
                     session.pass();
                 } else if (input.equalsIgnoreCase("HINT")) {
                     if (session.isHintUsed()) {
-                        System.out.println("Hint already used.");
+                        System.out.println("Hint can only be used once per game.");
                     } else {
                         ArrayList<String> words =
                             session.boggleAI.findAllValidWords(
@@ -499,7 +499,7 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All passed. Shake Up? (Y/N): ");
+                System.out.print("All players passed. Shake the board? (Y/N): ");
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -591,7 +591,7 @@ public class BoggleGame {
                 session.pass();
             } else if (input.equalsIgnoreCase("HINT")) {
                 if (session.isHintUsed()) {
-                    System.out.println("Hint already used.");
+                    System.out.println("Hint can only be used once per game.");
                 } else {
                     ArrayList<String> words =
                         session.boggleAI.findAllValidWords(
@@ -636,7 +636,7 @@ public class BoggleGame {
                     break;
                 }
                 System.out.print(
-                    "All active players passed. Shake Up? (Y/N): "
+                    "All players passed. Shake the board? (Y/N): "
                 );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
@@ -714,7 +714,7 @@ public class BoggleGame {
                     session.pass();
                 } else if (input.equalsIgnoreCase("HINT")) {
                     if (session.isHintUsed()) {
-                        System.out.println("Hint already used.");
+                        System.out.println("Hint can only be used once per game.");
                     } else {
                         ArrayList<String> words =
                             session.boggleAI.findAllValidWords(
@@ -760,7 +760,7 @@ public class BoggleGame {
                     break;
                 }
                 System.out.print(
-                    "All active players passed. Shake Up? (Y/N): "
+                    "All players passed. Shake the board? (Y/N): "
                 );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {

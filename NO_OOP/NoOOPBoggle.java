@@ -297,7 +297,7 @@ public class NoOOPBoggle {
                     announceWinner();
                     break;
                 }
-                System.out.print("All active players passed. Shake Up? (Y/N): ");
+                System.out.print("All players passed. Shake the board? (Y/N): ");
                 String answer = readLine(sc).trim();
                 if (answer.equalsIgnoreCase("Y")) performShake();
                 else {
@@ -434,7 +434,7 @@ public class NoOOPBoggle {
     // Finds and prints one strong valid word, if the hint has not already been used.
     void showHint() {
         if (hintUsed) {
-            System.out.println("Hint already used.");
+            System.out.println("Hint can only be used once per game.");
             return;
         }
         ArrayList<String> words = findAllValidWords(board, dictionary, minimumWordLength, usedWords);

@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -36,53 +35,6 @@ import java.util.Scanner;
  * the screen or call a GameSession method and then refresh the display.
  */
 public class BoggleGUI {
-    // #region agent log
-    private static volatile File agentLogFile;
-
-    private static File getAgentLogFile() {
-        if (agentLogFile == null) {
-            synchronized (BoggleGUI.class) {
-                if (agentLogFile == null) {
-                    agentLogFile = resolveAgentLogFile();
-                }
-            }
-        }
-        return agentLogFile;
-    }
-
-    /** Prefer project root (has src/wordlist.txt) so logs land in the workspace. */
-    private static File resolveAgentLogFile() {
-        File start = new File(System.getProperty("user.dir", ".")).getAbsoluteFile();
-        File dir = start;
-        for (int depth = 0; depth < 10 && dir != null; depth++) {
-            if (new File(dir, "src" + File.separator + "wordlist.txt").exists()
-                    || new File(dir, ".git").exists()) {
-                return new File(dir, "debug-e15d16.log").getAbsoluteFile();
-            }
-            dir = dir.getParentFile();
-        }
-        return new File(start, "debug-e15d16.log").getAbsoluteFile();
-    }
-
-    private static String esc(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
-    private static void agentLog(String hypothesisId, String location, String message, String dataJson) {
-        try (java.io.FileWriter fw = new java.io.FileWriter(getAgentLogFile(), StandardCharsets.UTF_8, true)) {
-            String dj = dataJson == null || dataJson.length() == 0 ? "{}" : dataJson;
-            fw.write("{\"sessionId\":\"e15d16\",\"hypothesisId\":\"" + esc(hypothesisId) + "\",\"location\":\""
-                    + esc(location) + "\",\"message\":\"" + esc(message) + "\",\"timestamp\":"
-                    + System.currentTimeMillis() + ",\"data\":" + dj + "}\n");
-        } catch (Throwable t) {
-            System.err.println("[agentLog] " + t.getMessage());
-        }
-    }
-    // #endregion
-
     // CardLayout lets one JFrame swap between menu, setup, and game screens.
     public JFrame window;
     public CardLayout cards;
@@ -189,12 +141,6 @@ public class BoggleGUI {
         cards.show(mainPanel, "menu");
 
         applyColorTheme(Color.WHITE);
-
-        // #region agent log
-        agentLog("BOOT", "BoggleGUI.<init>", "gui started",
-                "{\"logFile\":\"" + esc(getAgentLogFile().getAbsolutePath()) + "\",\"userDir\":\""
-                        + esc(System.getProperty("user.dir")) + "\"}");
-        // #endregion
     }
 
     /**
@@ -619,11 +565,6 @@ public class BoggleGUI {
                 return;
             }
 
-            // #region agent log
-            agentLog("H4", "BoggleGUI.startGame", "dictionary path check",
-                    "{\"exists\":" + dictionaryFile.exists() + ",\"path\":\"" + esc(dictionaryFile.getPath()) + "\"}");
-            // #endregion
-
             if (!dictionaryFile.exists()) {
                 JOptionPane.showMessageDialog(window, "Dictionary file was not found.");
                 return;
@@ -717,11 +658,6 @@ public class BoggleGUI {
                     }
                 }
 
-                // #region agent log
-                agentLog("H5", "BoggleGUI.startGame", "session about to start",
-                        "{\"phase\":" + currentPhase + ",\"playerCount\":" + players.size() + "}");
-                // #endregion
-
                 // From here onward, GameSession owns the rules and board state.
                 if (currentPhase == 5) {
                     game = new GameSession(players, minimumLength, targetScore, dictionaryFile, maximumLength);
@@ -742,19 +678,11 @@ public class BoggleGUI {
                 game.board = fileBoard;
             }
 
-            // #region agent log
-            agentLog("H1", "BoggleGUI.startGame", "GameSession created", "{}");
-            // #endregion
-
             // Build the game screen after the session exists, then begin turn 1.
             makeGamePanel();
             cards.show(mainPanel, "game");
             nextTurn();
         } catch (Exception e) {
-            // #region agent log
-            agentLog("H1", "BoggleGUI.startGame.catch", "startGame failed",
-                    "{\"ex\":\"" + esc(e.getClass().getName()) + "\"}");
-            // #endregion
             JOptionPane.showMessageDialog(window, "Please check the setup fields.");
         }
     }
@@ -1141,11 +1069,6 @@ public class BoggleGUI {
         Player player = game.getCurrentPlayer();
         AIResult result = game.runAITurnIfNeeded();
 
-        // #region agent log
-        agentLog("H3", "BoggleGUI.aiMove", "AI turn result",
-                "{\"passed\":" + result.passed + ",\"word\":\"" + esc(result.word == null ? "" : result.word) + "\"}");
-        // #endregion
-
         if (result.passed) {
             statusLabel.setText(player.name + " passed.");
         } else {
@@ -1212,11 +1135,6 @@ public class BoggleGUI {
         updateScores();
 
         int status = game.nextTurn();
-
-        // #region agent log
-        agentLog("H2", "BoggleGUI.afterTurn", "nextTurn status",
-                "{\"status\":" + status + ",\"round\":" + game.currentRound + "}");
-        // #endregion
 
         if (status == 2) {
             endGame();
@@ -1409,7 +1327,7 @@ public class BoggleGUI {
                 game.board, game.dictionary, game.minimumWordLength, game.usedWords);
 
         if (words.size() == 0) {
-            statusLabel.setText("No hint found.");
+            statusLabel.setText("No hint available.");
             return;
         }
 
