@@ -1,0 +1,75 @@
+--- GAME SUMMARY ---
+Time: 2026-06-02T13:40:04.515278
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-04T13:07:06.364731
+Winner: AI
+Reason: OPPONENT_QUIT
+Total Rounds: 3
+Shake-ups used: NO
+Name: Human | Score: 3
+Words Found: [SON]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: AI | Score: 7
+Words Found: [TONK, LAN]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-04T13:07:14.502401
+Winner: AI
+Reason: OPPONENT_QUIT
+Total Rounds: 3
+Shake-ups used: NO
+Name: Human | Score: 3
+Words Found: [SON]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: AI | Score: 7
+Words Found: [TONK, LAN]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-04T13:11:15.339029
+Winner: AI
+Reason: OPPONENT_QUIT
+Total Rounds: 2
+Shake-ups used: NO
+Name: Human | Score: 8
+Words Found: [FINERIES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: AI | Score: 4
+Words Found: [ASEM]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-04T13:11:21.019938
+Winner: AI
+Reason: OPPONENT_QUIT
+Total Rounds: 2
+Shake-ups used: NO
+Name: Human | Score: 8
+Words Found: [FINERIES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: AI | Score: 4
+Words Found: [ASEM]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+

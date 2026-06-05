@@ -1,3 +1,17 @@
+/*
+ * Author: Kevin Li and Ethan Chuang
+ * Date:   June 4, 2026
+ * Course: ICS4U1
+ * Project: Boggle Game
+ *
+ * Description:
+ * This class provides the graphical user interface for the Boggle game. It
+ * displays menus, setup options, the game board, player scores, timers, and
+ * controls while using GameSession to manage the game rules.
+ *
+ * Copyright (c) Kevin Li and Ethan Chuang
+ */
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -63,6 +77,7 @@ public class BoggleGUI {
     public JTextField targetField;
     public JTextField minimumField;
     public JTextField maximumField;
+    public JComboBox<String> wordListBox;
     public JTextField dictionaryField;
     public JTextField importSaveField;
     public JButton importSaveBrowseButton;
@@ -73,6 +88,7 @@ public class BoggleGUI {
     public JTextField humanField;
     public JComboBox<String> aiDifficultyBox;
     public JComboBox<String> firstPlayerBox;
+    public JComboBox<String> firstTurnBox;
     public JComboBox<String> playerCountBox;
     public JTextField[] playerFields;
     public JPanel[] playerRows;
@@ -108,6 +124,9 @@ public class BoggleGUI {
     public JButton saveButton;
     public Color boardTileColor;
     public File saveFile;
+    // True when the current game state has been saved and not changed since, so
+    // the quit dialog can skip asking the user to save again.
+    public boolean gameSaved;
 
     public BoggleGUI() {
         this(null);
@@ -167,6 +186,7 @@ public class BoggleGUI {
         JButton phase3 = new JButton("Phase 3: Multiplayer");
         JButton phase4 = new JButton("Phase 4: Multiplayer + AI");
         JButton phase5 = new JButton("Phase 5: AI vs AI");
+        JButton savedGame = new JButton("Play Saved Game");
         JButton quit = new JButton("Quit");
 
         // ActionListeners are the code that runs when a Swing button is clicked.
@@ -200,6 +220,12 @@ public class BoggleGUI {
             }
         });
 
+        savedGame.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                playSavedGame();
+            }
+        });
+
         quit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
@@ -211,7 +237,7 @@ public class BoggleGUI {
         buttons.add(phase3);
         buttons.add(phase4);
         buttons.add(phase5);
-        buttons.add(Box.createVerticalStrut(10));
+        buttons.add(savedGame);
         buttons.add(quit);
 
         menuPanel.add(buttons, BorderLayout.CENTER);
@@ -245,15 +271,11 @@ public class BoggleGUI {
         targetField = new JTextField("0");
         minimumField = new JTextField("3");
         maximumField = new JTextField("0");
-        String dictDefault = "src/wordlist.txt";
-        if (defaultDictionaryFile != null) {
-            try {
-                if (defaultDictionaryFile.exists()) {
-                    dictDefault = defaultDictionaryFile.getAbsolutePath();
-                }
-            } catch (Exception ignored) {
-            }
-        }
+        String dictDefault = getDefaultDictionaryPath();
+        wordListBox = new JComboBox<String>(
+            new String[] {"Standard wordlist.txt", "Test wordlistTest.txt", "Custom path"}
+        );
+        wordListBox.setSelectedIndex(getWordListSelection(new File(dictDefault)));
         dictionaryField = new JTextField(dictDefault);
         importSaveField = new JTextField("");
         importSaveBrowseButton = new JButton("Browse...");
@@ -271,13 +293,16 @@ public class BoggleGUI {
         customTimerField = new JTextField("30");
         customTimerField.setEnabled(false);
         boardColorBox = new JComboBox<String>(new String[] {"White", "Blue", "Green", "Yellow", "Pink"});
-        saveFileField = new JTextField("boggleSave.txt");
+        saveFileField = new JTextField(BoggleGame.SAVE_FILE_NAME);
+        saveFileField.setEnabled(false);
 
         fields.add(makeTextRow("Point target:", targetField));
         fields.add(makeTextRow("Minimum word length:", minimumField));
         if (phase == 5) {
             fields.add(makeTextRow("Maximum word length (0 = no limit):", maximumField));
         }
+        fields.add(makeComboRow("Word list:", wordListBox));
+        fields.add(makeTextRow("Word list file:", dictionaryField));
 
         JPanel importSaveRow = makeFileBrowseRow("Import Save File (Optional):", importSaveField, importSaveBrowseButton);
         importSaveRow.setVisible(phase != 1 && phase != 3 && phase != 5);
@@ -297,6 +322,12 @@ public class BoggleGUI {
 
         applyColorTheme(getSelectedBoardColor());
 
+        wordListBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateSelectedWordListPath();
+            }
+        });
+
         // Only enable the custom timer box when "Other" is selected.
         timerSelectionBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -308,23 +339,33 @@ public class BoggleGUI {
         if (phase == 1) {
             player1Field = new JTextField("Player 1");
             player2Field = new JTextField("Player 2");
+            firstTurnBox = new JComboBox<String>(
+                new String[] {"Player 1 first", "Player 2 first", "Random first"}
+            );
 
             fields.add(makeTextRow("Player 1 name:", player1Field));
             fields.add(makeTextRow("Player 2 name:", player2Field));
+            fields.add(makeComboRow("Who goes first:", firstTurnBox));
         } else if (phase == 2) {
             humanField = new JTextField("Human");
             aiDifficultyBox = makeDifficultyBox();
-            firstPlayerBox = new JComboBox<String>(new String[] {"Human first", "AI first"});
+            firstPlayerBox = new JComboBox<String>(
+                new String[] {"Human first", "AI first", "Random first"}
+            );
 
             fields.add(makeTextRow("Human player name:", humanField));
             fields.add(makeComboRow("AI difficulty:", aiDifficultyBox));
             fields.add(makeComboRow("Who goes first:", firstPlayerBox));
         } else if (phase == 3) {
             playerCountBox = new JComboBox<String>(new String[] {"2", "3", "4", "5", "6"});
+            firstTurnBox = new JComboBox<String>(
+                new String[] {"Player 1 first", "Random first"}
+            );
             playerFields = new JTextField[6];
             playerRows = new JPanel[6];
 
             fields.add(makeComboRow("Number of players:", playerCountBox));
+            fields.add(makeComboRow("Who goes first:", firstTurnBox));
 
             for (int i = 0; i < 6; i++) {
                 playerFields[i] = new JTextField("Player " + (i + 1));
@@ -345,6 +386,9 @@ public class BoggleGUI {
             humanRows = new JPanel[6];
             phase4DifficultyBox = makeDifficultyBox();
             aiPositionBox = new JComboBox<String>();
+            firstTurnBox = new JComboBox<String>(
+                new String[] {"Configured order", "Random first"}
+            );
 
             fields.add(makeComboRow("Number of human players:", humanCountBox));
 
@@ -356,6 +400,7 @@ public class BoggleGUI {
 
             fields.add(makeComboRow("AI difficulty:", phase4DifficultyBox));
             fields.add(makeComboRow("AI turn position:", aiPositionBox));
+            fields.add(makeComboRow("Who goes first:", firstTurnBox));
 
             humanCountBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -367,7 +412,9 @@ public class BoggleGUI {
             updateHumanRows();
             updateAIPositions();
         } else if (phase == 5) {
-            phase5FirstBox = new JComboBox<String>(new String[] {"My AI first", "Opponent AI first"});
+            phase5FirstBox = new JComboBox<String>(
+                new String[] {"My AI first", "Opponent AI first", "Random first"}
+            );
             boardFileField = new JTextField("setBoard.txt");
 
             fields.add(makeComboRow("Who goes first:", phase5FirstBox));
@@ -463,6 +510,57 @@ public class BoggleGUI {
         return new JComboBox<String>(new String[] {"Easy", "Medium", "Hard"});
     }
 
+    // Works out which word list path to put in the setup form by default:
+    // the one passed in from the menu if it exists, otherwise the standard
+    // wordlist.txt, otherwise a sensible fallback path.
+    public String getDefaultDictionaryPath() {
+        if (defaultDictionaryFile != null) {
+            try {
+                if (defaultDictionaryFile.exists()) {
+                    return defaultDictionaryFile.getAbsolutePath();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        File standard = BoggleGame.findDictionaryFile();
+        if (standard != null && standard.exists()) {
+            return standard.getPath();
+        }
+        return "src/wordlist.txt";
+    }
+
+    // Chooses which entry of the word-list dropdown matches the given file:
+    // 0 = standard, 1 = test, 2 = custom path.
+    public int getWordListSelection(File file) {
+        if (file != null && file.getName().equals("wordlistTest.txt")) {
+            return 1;
+        }
+        if (file != null && file.getName().equals("wordlist.txt")) {
+            return 0;
+        }
+        return 2;
+    }
+
+    // When the user picks "standard" or "test" in the dropdown, fill the file
+    // path box with the matching file. (Custom paths are left for the user.)
+    public void updateSelectedWordListPath() {
+        if (wordListBox == null || dictionaryField == null) return;
+
+        int selected = wordListBox.getSelectedIndex();
+        if (selected == 0) {
+            File standard = BoggleGame.findDictionaryFile();
+            dictionaryField.setText(
+                standard == null ? "src/wordlist.txt" : standard.getPath()
+            );
+        } else if (selected == 1) {
+            File test = BoggleGame.findTestDictionaryFile();
+            dictionaryField.setText(
+                test == null ? "src/wordlistTest.txt" : test.getPath()
+            );
+        }
+    }
+
     /** Shows only the player-name rows needed for the selected player count. */
     public void updatePlayerRows() {
         int count = getComboNumber(playerCountBox);
@@ -513,8 +611,9 @@ public class BoggleGUI {
             }
             File dictionaryFile = new File(dictionaryField.getText().trim());
             boardTileColor = getSelectedBoardColor();
-            saveFile = new File(saveFileField.getText().trim());
-            
+            saveFile = new File(BoggleGame.SAVE_FILE_NAME);
+            gameSaved = false;
+
             // Convert the timer dropdown into useTurnTimer + timerSeconds.
             int timerSelection = timerSelectionBox.getSelectedIndex();
             if (timerSelection == 0) {
@@ -611,22 +710,35 @@ public class BoggleGUI {
                 if (currentPhase == 1) {
                     players.add(new Player(player1Field.getText()));
                     players.add(new Player(player2Field.getText()));
+                    if (firstTurnBox.getSelectedIndex() == 1) {
+                        BoggleGame.rotatePlayersToFirst(players, 1);
+                    } else if (firstTurnBox.getSelectedIndex() == 2) {
+                        BoggleGame.randomizeFirstPlayer(players);
+                    }
                 } else if (currentPhase == 2) {
                     Player human = new Player(humanField.getText());
                     Player ai = BoggleAI.createAIPlayer("AI", getComboText(aiDifficultyBox));
 
-                    if (firstPlayerBox.getSelectedIndex() == 0) {
+                    int firstChoice = firstPlayerBox.getSelectedIndex();
+                    if (firstChoice == 0) {
                         players.add(human);
                         players.add(ai);
+                    } else if (firstChoice == 1) {
+                        players.add(ai);
+                        players.add(human);
                     } else {
-                        players.add(ai);
                         players.add(human);
+                        players.add(ai);
+                        BoggleGame.randomizeFirstPlayer(players);
                     }
                 } else if (currentPhase == 3) {
                     int count = getComboNumber(playerCountBox);
 
                     for (int i = 0; i < count; i++) {
                         players.add(new Player(playerFields[i].getText()));
+                    }
+                    if (firstTurnBox.getSelectedIndex() == 1) {
+                        BoggleGame.randomizeFirstPlayer(players);
                     }
                 } else if (currentPhase == 4) {
                     int humanCount = getComboNumber(humanCountBox);
@@ -645,16 +757,24 @@ public class BoggleGUI {
                             players.add(new Player(humanFields[humanNumber].getText()));
                         }
                     }
+                    if (firstTurnBox.getSelectedIndex() == 1) {
+                        BoggleGame.randomizeFirstPlayer(players);
+                    }
                 } else {
                     Player myAI = BoggleAI.createAIPlayer("My AI", "HARD");
                     Player opponentAI = new Player("Opponent AI");
 
-                    if (phase5FirstBox.getSelectedIndex() == 0) {
+                    int firstChoice = phase5FirstBox.getSelectedIndex();
+                    if (firstChoice == 0) {
                         players.add(myAI);
                         players.add(opponentAI);
+                    } else if (firstChoice == 1) {
+                        players.add(opponentAI);
+                        players.add(myAI);
                     } else {
-                        players.add(opponentAI);
                         players.add(myAI);
+                        players.add(opponentAI);
+                        BoggleGame.randomizeFirstPlayer(players);
                     }
                 }
 
@@ -684,6 +804,51 @@ public class BoggleGUI {
             nextTurn();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(window, "Please check the setup fields.");
+        }
+    }
+
+    public void playSavedGame() {
+        File savedGameFile = new File(BoggleGame.SAVE_FILE_NAME);
+        if (!savedGameFile.exists()) {
+            JOptionPane.showMessageDialog(window, "No saved game found.");
+            return;
+        }
+
+        try {
+            File dictionaryFile = new File(getDefaultDictionaryPath());
+            currentPhase = 1;
+            useTurnTimer = false;
+            timerSeconds = 0;
+            saveFile = savedGameFile;
+            // The loaded state matches the file on disk, so it counts as saved.
+            gameSaved = true;
+            game = GameSession.loadGame(savedGameFile, dictionaryFile, 3, 0);
+
+            makeGamePanel();
+            cards.show(mainPanel, "game");
+            restoreWordHistory();
+            nextTurn();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(window, "Could not load saved game.");
+        }
+    }
+
+    /** Rebuilds the word-history panel from each player's restored word list. */
+    public void restoreWordHistory() {
+        if (game == null || wordHistoryArea == null) {
+            return;
+        }
+        wordHistoryArea.setText("");
+        for (int i = 0; i < game.players.size(); i++) {
+            Player p = game.players.get(i);
+            if (p.wordsFound == null) {
+                continue;
+            }
+            for (int j = 0; j < p.wordsFound.size(); j++) {
+                String word = p.wordsFound.get(j);
+                // First-time words score their length (see GameSession.calculateScore).
+                addWordHistory(p.name, word, word.length());
+            }
         }
     }
 
@@ -844,7 +1009,7 @@ public class BoggleGUI {
 
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                saveGameFromGui(true);
+                saveGameFromGui(false);
             }
         });
 
@@ -1046,12 +1211,16 @@ public class BoggleGUI {
         int answer = JOptionPane.showConfirmDialog(window, "Are you sure you want to quit?");
 
         if (answer == JOptionPane.YES_OPTION) {
-            int saveAnswer = JOptionPane.showConfirmDialog(window, "Save game to file before quitting?");
-            if (saveAnswer == JOptionPane.YES_OPTION && !saveGameFromGui(false)) {
-                if (humanTurn) {
-                    startTimer();
+            // Only ask about saving if there are unsaved changes. If the user
+            // already saved this state, quit straight away.
+            if (!gameSaved) {
+                int saveAnswer = JOptionPane.showConfirmDialog(window, "Save game to file before quitting?");
+                if (saveAnswer == JOptionPane.YES_OPTION && !saveGameFromGui(false)) {
+                    if (humanTurn) {
+                        startTimer();
+                    }
+                    return;
                 }
-                return;
             }
             stopTimer();
             game.quit();
@@ -1131,6 +1300,8 @@ public class BoggleGUI {
      * next based on the status code returned by GameSession.nextTurn().
      */
     public void afterTurn() {
+        // The game state just changed, so any earlier save is now out of date.
+        gameSaved = false;
         updateRoundLabel();
         updateScores();
 
@@ -1177,9 +1348,10 @@ public class BoggleGUI {
         setInput(false);
         updateScores();
 
-        if (saveFile != null) {
-            game.writeLog(saveFile);
-        }
+        // Write the end-of-game summary to the dedicated log file. Never write it
+        // to the save file (saveFile), as appending the summary there corrupts the
+        // resume data and makes "Load Game" fail to parse it.
+        game.writeLog(new File(BoggleGame.LOG_FILE_NAME));
 
 
         Player winner = game.determineWinner();
@@ -1268,31 +1440,14 @@ public class BoggleGUI {
         }
     }
 
-    /**
-     * Saves the current game. When allowChooseFile is true, the user can pick a
-     * new location with JFileChooser.
-     */
+    /** Saves the current game to the single shared save slot. */
     public boolean saveGameFromGui(boolean allowChooseFile) {
         if (game == null) {
             return false;
         }
 
-        File file = saveFile;
-        if (file == null || file.getPath().trim().length() == 0 || allowChooseFile) {
-            JFileChooser chooser = new JFileChooser(new File("."));
-            if (file != null && file.getPath().trim().length() > 0) {
-                chooser.setSelectedFile(file);
-            } else {
-                chooser.setSelectedFile(new File("boggleSave.txt"));
-            }
-
-            int result = chooser.showSaveDialog(window);
-            if (result != JFileChooser.APPROVE_OPTION) {
-                return false;
-            }
-            file = chooser.getSelectedFile();
-            saveFile = file;
-        }
+        File file = new File(BoggleGame.SAVE_FILE_NAME);
+        saveFile = file;
 
         try {
             boolean saved = GameSession.saveGame(
@@ -1307,6 +1462,7 @@ public class BoggleGUI {
                 return false;
             }
             statusLabel.setText("Saved game to " + file.getName() + ".");
+            gameSaved = true;
             return true;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(window, "Could not save game file.");
@@ -1395,6 +1551,8 @@ public class BoggleGUI {
         }
     }
 
+    // Paints every panel (and the board tiles) with the chosen background color
+    // so the whole window matches the selected theme.
     public void applyColorTheme(Color c) {
         boardTileColor = c;
         if (window != null && window.getContentPane() != null) {

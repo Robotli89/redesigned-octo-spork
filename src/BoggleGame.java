@@ -1,3 +1,17 @@
+/*
+ * Author: Kevin Li and Ethan Chuang
+ * Date:   June 4, 2026
+ * Course: ICS4U1
+ * Project: Boggle Game
+ *
+ * Description:
+ * This class is the main entry point for the Boggle game. It lets the user
+ * choose between the text and graphical interfaces, configures each game
+ * mode, and runs the text-based game loop.
+ *
+ * Copyright (c) Kevin Li and Ethan Chuang
+ */
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -5,6 +19,12 @@ import javax.swing.SwingUtilities;
 
 public class BoggleGame {
 
+    // File names used for saving a game and for the game log.
+    public static final String SAVE_FILE_NAME = "boggleSave.txt";
+    public static final String LOG_FILE_NAME = "boggleLog.txt";
+
+    // Program start. Shows the top menu, where the user picks the text version,
+    // the GUI version, or changes the word list.
     public static void main(String[] args) {
         File dict = findDictionaryFile();
         if (dict == null) {
@@ -18,9 +38,22 @@ public class BoggleGame {
         Scanner sc = new Scanner(System.in);
         while (true) {
             System.out.println();
+            System.out.println("Welcome to the Boggle Program!");
+            System.out.println(
+                "You compete with others or AI to find who wins!"
+            );
+            System.out.println(
+                "You will be given a board and you will be trying to find a word from it."
+            );
+            System.out.println("See who gets more points!");
+            System.out.println(
+                "------------------------------------------------------------------------"
+            );
             System.out.println("Boggle — choose interface");
+            System.out.println("Current word list: " + dict.getPath());
             System.out.println("1) Text version");
             System.out.println("2) GUI version");
+            System.out.println("3) Choose word list");
             System.out.println("0) Exit");
             System.out.print("Choose: ");
             String mode = sc.nextLine();
@@ -32,7 +65,14 @@ public class BoggleGame {
             if (mode.equals("0")) {
                 break;
             }
+            if (mode.equals("3")) {
+                dict = chooseWordList(sc, dict);
+                continue;
+            }
             if (mode.equals("2")) {
+                // Launch the graphical version. Swing wants its windows created
+                // on its own special thread, so invokeLater hands the job off to
+                // that thread instead of building the window here.
                 final File dictionaryForGui = dict;
                 SwingUtilities.invokeLater(
                     new Runnable() {
@@ -54,6 +94,64 @@ public class BoggleGame {
         sc.close();
     }
 
+    // Lets the user pick which word list to play with: the standard list, the
+    // small test list, or a custom file path they type in.
+    public static File chooseWordList(Scanner sc, File currentDictionaryFile) {
+        while (true) {
+            File standard = findDictionaryFile();
+            File test = findTestDictionaryFile();
+
+            System.out.println();
+            System.out.println("Choose word list");
+            System.out.println(
+                "1) Standard wordlist.txt" + describeFile(standard)
+            );
+            System.out.println("2) Test wordlistTest.txt" + describeFile(test));
+            System.out.println("3) Custom path");
+            System.out.println("0) Back");
+            System.out.print("Choose: ");
+
+            String ch = sc.nextLine();
+            if (ch == null) ch = "";
+            ch = ch.trim();
+
+            if (ch.equals("0")) {
+                return currentDictionaryFile;
+            }
+            if (ch.equals("1")) {
+                if (standard != null && standard.exists()) return standard;
+                System.out.println("Standard word list was not found.");
+                continue;
+            }
+            if (ch.equals("2")) {
+                if (test != null && test.exists()) return test;
+                System.out.println("Test word list was not found.");
+                continue;
+            }
+            if (ch.equals("3")) {
+                System.out.print("Enter word list file path: ");
+                String path = sc.nextLine();
+                if (path == null) path = "";
+                path = path.trim();
+                File custom = new File(path);
+                if (custom.exists()) return custom;
+                System.out.println("Word list file was not found.");
+                continue;
+            }
+
+            System.out.println("Invalid choice.");
+        }
+    }
+
+    // Returns a short note about a file for the menu, e.g. " (src/wordlist.txt)"
+    // or " (not found)".
+    public static String describeFile(File file) {
+        if (file == null || !file.exists()) return " (not found)";
+        return " (" + file.getPath() + ")";
+    }
+
+    // The text-mode menu. Lets the user pick a game type, runs it, then asks if
+    // they want to play another round.
     private static void runTextMode(Scanner sc, File dict) {
         while (true) {
             System.out.println();
@@ -63,6 +161,7 @@ public class BoggleGame {
             System.out.println("3) Multiplayer");
             System.out.println("4) Multiplayer + AI");
             System.out.println("5) AI vs AI");
+            System.out.println("6) Play saved game");
             System.out.println("0) Back");
             System.out.print("Choose: ");
             String ch = sc.nextLine();
@@ -84,6 +183,10 @@ public class BoggleGame {
                 runMultiplayerAI(sc, dict);
             } else if (ch.equals("5")) {
                 runAIvsAI(sc, dict);
+            } else if (ch.equals("6")) {
+                if (!runSavedGame(sc, dict)) {
+                    continue;
+                }
             } else {
                 System.out.println("Invalid choice.");
                 continue;
@@ -101,6 +204,32 @@ public class BoggleGame {
         }
     }
 
+    // Loads the saved game from disk (if there is one) and plays it.
+    public static boolean runSavedGame(Scanner sc, File dictionaryFile) {
+        File saveFile = new File(SAVE_FILE_NAME);
+        if (!saveFile.exists()) {
+            System.out.println("No saved game found.");
+            return false;
+        }
+
+        try {
+            GameSession session = GameSession.loadGame(
+                saveFile,
+                dictionaryFile,
+                3,
+                0
+            );
+            System.out.println("Loaded last saved game.");
+            gameLoop(sc, session, 0);
+            return true;
+        } catch (Exception e) {
+            System.out.println("Could not load saved game.");
+            return false;
+        }
+    }
+
+    // Sets up and runs a two-human game: asks for names and settings, builds
+    // the players, then hands off to the shared gameLoop.
     public static void runPlayerVsPlayer(Scanner sc, File dictionaryFile) {
         showRules();
 
@@ -112,10 +241,12 @@ public class BoggleGame {
         int minLen = readInt(sc, "Minimum word length (>=3): ", 3);
         int target = readIntAllowZero(sc, "Target score (0 = no target): ");
         int timerSeconds = readTimerChoice(sc);
+        boolean randomFirst = readRandomFirstChoice(sc);
 
         ArrayList<Player> players = new ArrayList<Player>();
         players.add(new Player(p1));
         players.add(new Player(p2));
+        applyRandomFirstChoice(players, randomFirst);
 
         GameSession session = new GameSession(
             players,
@@ -126,6 +257,8 @@ public class BoggleGame {
         gameLoop(sc, session, timerSeconds);
     }
 
+    // Asks the user how long each turn should last. Returns the number of
+    // seconds, or 0 for no timer.
     public static int readTimerChoice(Scanner sc) {
         while (true) {
             System.out.println();
@@ -152,7 +285,65 @@ public class BoggleGame {
         }
     }
 
-    /** Same text as printed by {@link #showRules()}, for GUI dialogs. */
+    // Asks yes/no whether the starting player should be chosen randomly.
+    public static boolean readRandomFirstChoice(Scanner sc) {
+        while (true) {
+            System.out.print("Randomize who goes first? (Y/N): ");
+            String ch = sc.nextLine();
+            if (ch == null) ch = "";
+            ch = ch.trim();
+
+            if (ch.equalsIgnoreCase("Y")) return true;
+            if (ch.equalsIgnoreCase("N")) return false;
+            System.out.println("Enter Y or N.");
+        }
+    }
+
+    // If the user asked to randomize the first player, do it and announce who
+    // goes first.
+    public static void applyRandomFirstChoice(
+        ArrayList<Player> players,
+        boolean randomFirst
+    ) {
+        if (!randomFirst) return;
+        Player first = randomizeFirstPlayer(players);
+        if (first != null) {
+            System.out.println("Random first player: " + first.name);
+        }
+    }
+
+    // Picks a random player to go first by rotating the list so that player is
+    // at the front. Returns the new first player.
+    public static Player randomizeFirstPlayer(ArrayList<Player> players) {
+        if (players == null || players.isEmpty()) return null;
+        int firstIndex = (int) (Math.random() * players.size());
+        rotatePlayersToFirst(players, firstIndex);
+        return players.get(0);
+    }
+
+    // Rotates the player list so the player at firstIndex becomes index 0, while
+    // keeping everyone else in the same turn order after them.
+    public static void rotatePlayersToFirst(
+        ArrayList<Player> players,
+        int firstIndex
+    ) {
+        if (players == null || players.isEmpty()) return;
+        if (firstIndex < 0 || firstIndex >= players.size()) return;
+
+        // Build the rotated order using % to wrap around the end of the list.
+        ArrayList<Player> rotated = new ArrayList<Player>();
+        for (int i = 0; i < players.size(); i++) {
+            rotated.add(players.get((firstIndex + i) % players.size()));
+        }
+
+        // Copy the rotated order back into the original list.
+        players.clear();
+        for (int i = 0; i < rotated.size(); i++) {
+            players.add(rotated.get(i));
+        }
+    }
+
+    // Same rules text that showRules() prints, so the GUI can show it too.
     public static String getRulesText() {
         return (
             "Rules:\n" +
@@ -163,11 +354,15 @@ public class BoggleGame {
         );
     }
 
+    // Prints the rules to the text console.
     public static void showRules() {
         System.out.print(getRulesText());
         System.out.println();
     }
 
+    // The main text game loop shared by the human-only modes. Each pass shows
+    // the board, reads the current player's input (word / PASS / QUIT / HINT),
+    // applies it, then advances the turn and checks if the game should end.
     public static void gameLoop(
         Scanner sc,
         GameSession session,
@@ -192,13 +387,15 @@ public class BoggleGame {
             System.out.print("Enter word (or PASS / QUIT / HINT): ");
             String input = getInputWithTimer(sc, timerSeconds, session);
 
+            // Decide what the player typed and act on it.
             if (input.equals("TIMEOUT_PASS")) {
-                // Timeout pass already handled
+                // Timeout pass already handled inside getInputWithTimer.
             } else if (input.equalsIgnoreCase("QUIT")) {
                 session.quit();
             } else if (input.equalsIgnoreCase("PASS")) {
                 session.pass();
             } else if (input.equalsIgnoreCase("HINT")) {
+                // Ask the AI for a strong word and show it, but only once a game.
                 if (session.isHintUsed()) {
                     System.out.println("Hint can only be used once per game.");
                 } else {
@@ -220,8 +417,9 @@ public class BoggleGame {
                         session.markHintUsed();
                     }
                 }
-                continue;
+                continue;  // a hint does not use up the player's turn
             } else {
+                // Otherwise treat the input as a word and report the result.
                 int r = session.submitWord(input);
                 if (r == 1) {
                     System.out.println(
@@ -230,10 +428,14 @@ public class BoggleGame {
                 } else if (r == 2) {
                     System.out.println("Used before. 0 points.");
                 } else {
-                    System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
+                    System.out.println(
+                        "Invalid word. Check length, dictionary, and board path. 0 points."
+                    );
                 }
             }
 
+            // Advance to the next turn and react to the result code:
+            // 2 = game over, 1 = everyone passed (maybe shake), 0 = keep going.
             int ar = session.nextTurn();
             if (ar == 2) {
                 announceWinner(session);
@@ -244,7 +446,9 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All players passed. Shake the board? (Y/N): ");
+                System.out.print(
+                    "All players passed. Shake the board? (Y/N): "
+                );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -256,6 +460,10 @@ public class BoggleGame {
         }
     }
 
+    // Reads one line of input and, if a timer is on, measures how long it took.
+    // If the player took too long it records a timeout and returns the special
+    // marker "TIMEOUT_PASS". (Note: this checks the time AFTER the line is
+    // entered, so it cannot interrupt someone mid-typing.)
     private static String getInputWithTimer(
         Scanner sc,
         int timerSeconds,
@@ -286,6 +494,8 @@ public class BoggleGame {
         return input;
     }
 
+    // Prints the final scores and the winner (or TIED), and writes the game log.
+    // It finds the highest score and counts how many players share it.
     public static void announceWinner(GameSession session) {
         Player w = null;
         int bestScore = -1;
@@ -313,9 +523,11 @@ public class BoggleGame {
             Player p = session.players.get(i);
             System.out.println(p.name + " score=" + p.totalScore);
         }
-        session.writeLog(new File("boggleSave.txt"));
+        session.writeLog(new File(LOG_FILE_NAME));
     }
 
+    // Keeps asking until the user types a whole number that is at least
+    // minValue, then returns it. Re-prompts on bad input.
     public static int readInt(Scanner sc, String prompt, int minValue) {
         while (true) {
             System.out.print(prompt);
@@ -333,6 +545,8 @@ public class BoggleGame {
         }
     }
 
+    // Like readInt but the smallest allowed value is 0 (used for "target score"
+    // where 0 means "no target").
     public static int readIntAllowZero(Scanner sc, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -350,6 +564,8 @@ public class BoggleGame {
         }
     }
 
+    // Asks for the maximum word length. Accepts a number, or 0 / "NO LIMIT" /
+    // "NONE" to mean no maximum.
     public static int readMaxWordLength(Scanner sc, int minimumWordLength) {
         while (true) {
             System.out.print(
@@ -382,6 +598,9 @@ public class BoggleGame {
         }
     }
 
+    // Sets up and runs a human-vs-AI game. It has its own loop (instead of the
+    // shared gameLoop) because on the AI's turn it calls the AI and can offer a
+    // board shake when the AI pulls ahead of a player who has passed.
     public static void runPlayerVsAI(Scanner sc, File dictionaryFile) {
         showRules();
 
@@ -394,10 +613,12 @@ public class BoggleGame {
         int minLen = readInt(sc, "Minimum word length (>=3): ", 3);
         int target = readIntAllowZero(sc, "Target score (0 = no target): ");
         int timerSeconds = readTimerChoice(sc);
+        boolean randomFirst = readRandomFirstChoice(sc);
 
         ArrayList<Player> players = new ArrayList<Player>();
         players.add(new Player(human));
         players.add(BoggleAI.createAIPlayer("AI", diff));
+        applyRandomFirstChoice(players, randomFirst);
 
         GameSession session = new GameSession(
             players,
@@ -449,12 +670,14 @@ public class BoggleGame {
                     // Timeout pass already handled
                 } else if (input.equalsIgnoreCase("QUIT")) {
                     session.quit();
-                    session.saveIfPvAIQuit(new File(human + "Save.txt"));
+                    session.saveIfPvAIQuit(new File(SAVE_FILE_NAME));
                 } else if (input.equalsIgnoreCase("PASS")) {
                     session.pass();
                 } else if (input.equalsIgnoreCase("HINT")) {
                     if (session.isHintUsed()) {
-                        System.out.println("Hint can only be used once per game.");
+                        System.out.println(
+                            "Hint can only be used once per game."
+                        );
                     } else {
                         ArrayList<String> words =
                             session.boggleAI.findAllValidWords(
@@ -484,7 +707,9 @@ public class BoggleGame {
                     } else if (sr == 2) {
                         System.out.println("Used before. 0 points.");
                     } else {
-                        System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
+                        System.out.println(
+                            "Invalid word. Check length, dictionary, and board path. 0 points."
+                        );
                     }
                 }
             }
@@ -499,7 +724,9 @@ public class BoggleGame {
                     announceWinner(session);
                     break;
                 }
-                System.out.print("All players passed. Shake the board? (Y/N): ");
+                System.out.print(
+                    "All players passed. Shake the board? (Y/N): "
+                );
                 String ch = sc.nextLine();
                 if (ch != null && ch.trim().equalsIgnoreCase("Y")) {
                     session.performShake();
@@ -511,6 +738,10 @@ public class BoggleGame {
         }
     }
 
+    // When the AI is winning and the human has already passed, offer them one
+    // board shake to keep playing. Returns true if the game should continue
+    // (board was shaken) or false if it is over. Returns the human to their
+    // turn after a shake so they get a fair chance.
     public static boolean offerShakeAfterAILead(
         Scanner sc,
         GameSession session,
@@ -542,6 +773,8 @@ public class BoggleGame {
         return false;
     }
 
+    // Sets up and runs a game with 3 or more human players. The loop is the same
+    // idea as gameLoop, just with more players taking turns.
     public static void runMultiplayer(Scanner sc, File dictionaryFile) {
         showRules();
 
@@ -556,6 +789,8 @@ public class BoggleGame {
             String name = sc.nextLine();
             players.add(new Player(name));
         }
+        boolean randomFirst = readRandomFirstChoice(sc);
+        applyRandomFirstChoice(players, randomFirst);
 
         GameSession session = new GameSession(
             players,
@@ -621,7 +856,9 @@ public class BoggleGame {
                 } else if (sr == 2) {
                     System.out.println("Used before. 0 points.");
                 } else {
-                    System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
+                    System.out.println(
+                        "Invalid word. Check length, dictionary, and board path. 0 points."
+                    );
                 }
             }
 
@@ -649,6 +886,8 @@ public class BoggleGame {
         }
     }
 
+    // Sets up and runs a game that mixes human players and AI players. On an
+    // AI's turn the AI plays automatically; on a human's turn it reads input.
     public static void runMultiplayerAI(Scanner sc, File dictionaryFile) {
         showRules();
 
@@ -671,6 +910,8 @@ public class BoggleGame {
             String diff = sc.nextLine();
             players.add(BoggleAI.createAIPlayer("AI" + (i + 1), diff));
         }
+        boolean randomFirst = readRandomFirstChoice(sc);
+        applyRandomFirstChoice(players, randomFirst);
 
         GameSession session = new GameSession(
             players,
@@ -714,7 +955,9 @@ public class BoggleGame {
                     session.pass();
                 } else if (input.equalsIgnoreCase("HINT")) {
                     if (session.isHintUsed()) {
-                        System.out.println("Hint can only be used once per game.");
+                        System.out.println(
+                            "Hint can only be used once per game."
+                        );
                     } else {
                         ArrayList<String> words =
                             session.boggleAI.findAllValidWords(
@@ -744,7 +987,9 @@ public class BoggleGame {
                     } else if (sr == 2) {
                         System.out.println("Used before. 0 points.");
                     } else {
-                        System.out.println("Invalid word. Check length, dictionary, and board path. 0 points.");
+                        System.out.println(
+                            "Invalid word. Check length, dictionary, and board path. 0 points."
+                        );
                     }
                 }
             }
@@ -773,6 +1018,9 @@ public class BoggleGame {
         }
     }
 
+    // Runs a special mode where our AI plays against an outside AI. The board is
+    // read from setBoard.txt so both programs use the same letters, and the
+    // opponent's moves are typed in by hand to keep the two games in sync.
     public static void runAIvsAI(Scanner sc, File dictionaryFile) {
         System.out.println("AI vs AI Rules:");
         System.out.println(
@@ -802,6 +1050,7 @@ public class BoggleGame {
         System.out.println("Who goes first?");
         System.out.println("1) My AI");
         System.out.println("2) Opponent AI");
+        System.out.println("3) Random");
         System.out.print("Choose: ");
         String first = sc.nextLine();
         if (first == null) first = "";
@@ -817,6 +1066,9 @@ public class BoggleGame {
         } else {
             players.add(myAI);
             players.add(opponentAI);
+            if (first.equals("3")) {
+                applyRandomFirstChoice(players, true);
+            }
         }
 
         GameSession session = new GameSession(
@@ -866,7 +1118,9 @@ public class BoggleGame {
                     } else if (sr == 2) {
                         System.out.println("Rejected: used before.");
                     } else {
-                        System.out.println("Rejected: invalid word. Check length, dictionary, and board path.");
+                        System.out.println(
+                            "Rejected: invalid word. Check length, dictionary, and board path."
+                        );
                     }
                 }
             }
@@ -883,10 +1137,14 @@ public class BoggleGame {
         }
     }
 
+    // Reads a fixed 5x5 board from a file for AI-vs-AI mode. It gathers all the
+    // letters (ignoring spaces and line breaks), checks there are at least 25
+    // valid A-Z letters, then fills the grid. Returns null if anything is wrong.
     public static char[][] readBoardFile(File file) {
         try {
             if (file == null || !file.exists()) return null;
 
+            // Read every token and glue them together into one string of letters.
             Scanner scanner = new Scanner(file);
             String letters = "";
             while (scanner.hasNext()) {
@@ -896,7 +1154,7 @@ public class BoggleGame {
 
             letters = letters.toUpperCase();
             int need = GameSession.BOARD_SIZE * GameSession.BOARD_SIZE;
-            if (letters.length() < need) return null;
+            if (letters.length() < need) return null;  // not enough letters
 
             char[][] board =
                 new char[GameSession.BOARD_SIZE][GameSession.BOARD_SIZE];
@@ -904,7 +1162,7 @@ public class BoggleGame {
             for (int r = 0; r < GameSession.BOARD_SIZE; r++) {
                 for (int c = 0; c < GameSession.BOARD_SIZE; c++) {
                     char ch = letters.charAt(index);
-                    if (ch < 'A' || ch > 'Z') return null;
+                    if (ch < 'A' || ch > 'Z') return null;  // not a real letter
                     board[r][c] = ch;
                     index++;
                 }
@@ -915,6 +1173,8 @@ public class BoggleGame {
         }
     }
 
+    // Looks for setBoard.txt in a few likely folders and returns the first one
+    // found (or a default name if none exist).
     public static File findSetBoardFile() {
         String[] candidates = new String[] {
             "setBoard.txt",
@@ -929,13 +1189,26 @@ public class BoggleGame {
         return new File("setBoard.txt");
     }
 
+    // Finds the main dictionary file (wordlist.txt).
     public static File findDictionaryFile() {
+        return findWordListFile("wordlist.txt");
+    }
+
+    // Finds the small test dictionary file (wordlistTest.txt).
+    public static File findTestDictionaryFile() {
+        return findWordListFile("wordlistTest.txt");
+    }
+
+    // Searches several likely folders for a word list file and returns the first
+    // one that exists, or null if none are found. This makes the program work no
+    // matter which folder it is run from.
+    public static File findWordListFile(String fileName) {
         String[] candidates = new String[] {
-            "src/wordlist.txt",
-            "wordlist.txt",
-            "BoggleAssignment/redesigned-octo-spork/src/wordlist.txt",
-            "BoggleAssignment/wordlist.txt",
-            "redesigned-octo-spork/src/wordlist.txt",
+            "src/" + fileName,
+            fileName,
+            "BoggleAssignment/redesigned-octo-spork/src/" + fileName,
+            "BoggleAssignment/" + fileName,
+            "redesigned-octo-spork/src/" + fileName,
         };
         for (int i = 0; i < candidates.length; i++) {
             File f = new File(candidates[i]);

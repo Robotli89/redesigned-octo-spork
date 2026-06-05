@@ -1,0 +1,13 @@
+Status: Paused
+CurrentRound: 2
+ShakeUpUsed: NO
+UsedWords: FINERIES,ASEM
+Board:
+UTYRO
+SEYEI
+MFIMO
+CIREZ
+TTNSA
+Players:
+Human|8|FINERIES
+AI|4|ASEM
