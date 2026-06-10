@@ -273,7 +273,12 @@ public class BoggleGUI {
         maximumField = new JTextField("0");
         String dictDefault = getDefaultDictionaryPath();
         wordListBox = new JComboBox<String>(
-            new String[] {"Standard wordlist.txt", "Test wordlistTest.txt", "Custom path"}
+            new String[] {
+                "Standard wordlist.txt",
+                "Test wordlistTest.txt",
+                "Test wordlistTest2.txt",
+                "Custom path"
+            }
         );
         wordListBox.setSelectedIndex(getWordListSelection(new File(dictDefault)));
         dictionaryField = new JTextField(dictDefault);
@@ -531,19 +536,22 @@ public class BoggleGUI {
     }
 
     // Chooses which entry of the word-list dropdown matches the given file:
-    // 0 = standard, 1 = test, 2 = custom path.
+    // 0 = standard, 1 = test, 2 = test2, 3 = custom path.
     public int getWordListSelection(File file) {
         if (file != null && file.getName().equals("wordlistTest.txt")) {
             return 1;
         }
+        if (file != null && file.getName().equals("wordlistTest2.txt")) {
+            return 2;
+        }
         if (file != null && file.getName().equals("wordlist.txt")) {
             return 0;
         }
-        return 2;
+        return 3;
     }
 
-    // When the user picks "standard" or "test" in the dropdown, fill the file
-    // path box with the matching file. (Custom paths are left for the user.)
+    // When the user picks a built-in word list in the dropdown, fill the file
+    // path box with the matching file. Custom paths are left for the user.
     public void updateSelectedWordListPath() {
         if (wordListBox == null || dictionaryField == null) return;
 
@@ -557,6 +565,11 @@ public class BoggleGUI {
             File test = BoggleGame.findTestDictionaryFile();
             dictionaryField.setText(
                 test == null ? "src/wordlistTest.txt" : test.getPath()
+            );
+        } else if (selected == 2) {
+            File test2 = BoggleGame.findTest2DictionaryFile();
+            dictionaryField.setText(
+                test2 == null ? "src/wordlistTest2.txt" : test2.getPath()
             );
         }
     }

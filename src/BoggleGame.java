@@ -94,12 +94,13 @@ public class BoggleGame {
         sc.close();
     }
 
-    // Lets the user pick which word list to play with: the standard list, the
-    // small test list, or a custom file path they type in.
+    // Lets the user pick which word list to play with: the standard list, either
+    // test list, or a custom file path they type in.
     public static File chooseWordList(Scanner sc, File currentDictionaryFile) {
         while (true) {
             File standard = findDictionaryFile();
             File test = findTestDictionaryFile();
+            File test2 = findTest2DictionaryFile();
 
             System.out.println();
             System.out.println("Choose word list");
@@ -107,7 +108,8 @@ public class BoggleGame {
                 "1) Standard wordlist.txt" + describeFile(standard)
             );
             System.out.println("2) Test wordlistTest.txt" + describeFile(test));
-            System.out.println("3) Custom path");
+            System.out.println("3) Test wordlistTest2.txt" + describeFile(test2));
+            System.out.println("4) Custom path");
             System.out.println("0) Back");
             System.out.print("Choose: ");
 
@@ -129,6 +131,11 @@ public class BoggleGame {
                 continue;
             }
             if (ch.equals("3")) {
+                if (test2 != null && test2.exists()) return test2;
+                System.out.println("Second test word list was not found.");
+                continue;
+            }
+            if (ch.equals("4")) {
                 System.out.print("Enter word list file path: ");
                 String path = sc.nextLine();
                 if (path == null) path = "";
@@ -1197,6 +1204,11 @@ public class BoggleGame {
     // Finds the small test dictionary file (wordlistTest.txt).
     public static File findTestDictionaryFile() {
         return findWordListFile("wordlistTest.txt");
+    }
+
+    // Finds the second test dictionary file (wordlistTest2.txt).
+    public static File findTest2DictionaryFile() {
+        return findWordListFile("wordlistTest2.txt");
     }
 
     // Searches several likely folders for a word list file and returns the first

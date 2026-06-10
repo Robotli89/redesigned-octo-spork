@@ -73,3 +73,273 @@ Words Found: [ASEM]
 Auto-passes (Wrong Words): 0
 Auto-passes (Timer): 0
 
+--- GAME SUMMARY ---
+Time: 2026-06-08T13:06:04.611446
+Winner: Opponent AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 26
+Shake-ups used: NO
+Name: Opponent AI | Score: 154
+Words Found: [KNEEHOLE, SILENCED, SILENCES, KEYLESS, OILSEED, SILENCE, HELIOS, KNEELS, CENSES, SNAKED, LASSES, ECOLES, EASILY, COSEYS, AISLES, SOILS, HENCE, SLEEK, CLOSE, NEEDS, LASSO, SAYEE, DENSE, SAILS, LEEDS, ECOLE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 148
+Words Found: [HOLELESS, LOESSIAL, OILSEEDS, DENSELY, SESSILE, CLOSELY, AKENES, CENSED, UNHOLY, SOLELY, LENSED, LENSES, CLOSED, CLOSES, ANELE, KNEED, KNEES, KNEEL, KEENS, KEELS, KEYED, CEDES, CENSE, NAKED, NUKES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-08T13:32:30.654539
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 15
+Shake-ups used: NO
+Name: My AI | Score: 99
+Words Found: [KNEEHOLE, LOESSIAL, SILENCES, KEYLESS, DENSELY, SESSILE, AKENES, KNEELS, CENSES, UNHOLY, LENSED, LENSES, CLOSED, CLOSES, AISLES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 93
+Words Found: [HOLELESS, SILENCED, OILSEEDS, OILSEED, SILENCE, CLOSELY, HELIOS, CENSED, SNAKED, SOLELY, LASSES, ECOLES, EASILY, COSEYS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-08T13:39:11.817154
+Winner: My AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 26
+Shake-ups used: NO
+Name: My AI | Score: 152
+Words Found: [REOPENED, ASTRIDE, OPENEST, PYROGEN, DESTAIN, HOGTIE, REOPEN, RIOTED, YOGEES, OPENED, STRIDE, PYRITE, PENNED, TRINES, TRINED, TINNED, INSTR, HINTS, HYPES, HYPED, HOPES, HOPED, ROPED, ASPEN, ASTIR, YOGEE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 146
+Words Found: [DESTINED, PENNIES, DEPENDS, DESTINE, SEINED, DENIES, DINNED, POTEEN, DENIED, GENIES, DRIEST, DESPOT, INDEED, DEPEND, DENNED, ESTRIN, INNED, NEEDS, SEPOY, ROPES, TANSY, TINED, STIED, TINES, DINED]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:37:13.999863
+Winner: Opponent AI
+Reason: OPPONENT_QUIT
+Total Rounds: 15
+Shake-ups used: NO
+Name: My AI | Score: 99
+Words Found: [KNEEHOLE, LOESSIAL, SILENCES, KEYLESS, DENSELY, SESSILE, AKENES, KNEELS, CENSES, UNHOLY, LENSED, LENSES, CLOSED, CLOSES, AISLES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 93
+Words Found: [HOLELESS, SILENCED, OILSEEDS, OILSEED, SILENCE, CLOSELY, HELIOS, CENSED, SNAKED, SOLELY, LASSES, ECOLES, EASILY, COSEYS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:37:29.857776
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: My AI | Score: 5
+Words Found: [NEEDS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:39:37.449762
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: My AI | Score: 9
+Words Found: [COLESEEDS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:44:39.397203
+Winner: My AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 15
+Shake-ups used: NO
+Name: My AI | Score: 100
+Words Found: [KNEEHOLE, LOESSIAL, SILENCED, KEYLESS, DENSELY, SESSILE, SILENCE, AKENES, KNEELS, CENSED, CENSES, UNHOLY, HELIOS, SNAKED, SOLELY]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 38
+Words Found: [HOLELESS, OILSEEDS, SILENCES, CLOSELY, OILSEED]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:47:51.693180
+Winner: My AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 16
+Shake-ups used: NO
+Name: My AI | Score: 104
+Words Found: [KNEEHOLE, LOESSIAL, SILENCED, KEYLESS, DENSELY, SESSILE, AKENES, KNEELS, CENSES, UNHOLY, HELIOS, SNAKED, SOLELY, LENSED, LENSES, ANELE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 98
+Words Found: [HOLELESS, OILSEEDS, SILENCES, CLOSELY, OILSEED, SILENCE, AISLES, CENSED, CLOSED, CLOSES, COSEYS, EASILY, ECOLES, LASSES, AISLE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:49:18.297272
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T12:53:10.364684
+Winner: Opponent AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 16
+Shake-ups used: NO
+Name: Opponent AI | Score: 102
+Words Found: [DESTINED, ASTRIDE, DEPENDS, DESTAIN, DESTINE, DENIED, DENIES, DENNED, DEPEND, DESPOT, DINNED, DRIEST, ESTRIN, GENIES, INDEED, TINNED]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 95
+Words Found: [REOPENED, OPENEST, PYROGEN, PENNIES, HOGTIE, REOPEN, RIOTED, YOGEES, OPENED, STRIDE, SEINED, PYRITE, POTEEN, PENNED, TRINES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:00:53.175753
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 2
+Shake-ups used: NO
+Name: My AI | Score: 16
+Words Found: [KNEEHOLE, HOLELESS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 3
+Words Found: [ADS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:06:43.557339
+Winner: My AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 16
+Shake-ups used: NO
+Name: My AI | Score: 104
+Words Found: [KNEEHOLE, LOESSIAL, SILENCED, KEYLESS, DENSELY, SESSILE, AKENES, KNEELS, CENSES, UNHOLY, HELIOS, SNAKED, SOLELY, LENSED, LENSES, ANELE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 93
+Words Found: [HOLELESS, OILSEEDS, SILENCES, CLOSELY, OILSEED, SILENCE, AISLES, CENSED, CLOSED, CLOSES, COSEYS, EASILY, ECOLES, LASSES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:07:08.378240
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 2
+Shake-ups used: NO
+Name: My AI | Score: 16
+Words Found: [KNEEHOLE, HOLELESS]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 6
+Words Found: [SOLELY]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:08:35.546266
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:12:20.447761
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 12
+Shake-ups used: NO
+Name: Opponent AI | Score: 75
+Words Found: [DESTINED, REOPENED, ASTRIDE, DEPENDS, DESTAIN, DESTINE, PENNIES, DENIED, DENIES, DENNED, DEPEND]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 79
+Words Found: [HYPOGENE, STANHOPE, INYOITE, HYPORIT, HYPOGEE, OPENEST, PYROGEN, PENNIED, GENETOR, DESPEND, DITTANY]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:12:25.476895
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 12
+Shake-ups used: NO
+Name: Opponent AI | Score: 75
+Words Found: [DESTINED, REOPENED, ASTRIDE, DEPENDS, DESTAIN, DESTINE, PENNIES, DENIED, DENIES, DENNED, DEPEND]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 79
+Words Found: [HYPOGENE, STANHOPE, INYOITE, HYPORIT, HYPOGEE, OPENEST, PYROGEN, PENNIED, GENETOR, DESPEND, DITTANY]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-09T13:17:20.915896
+Winner: Opponent AI
+Reason: TARGET_SCORE_REACHED
+Total Rounds: 16
+Shake-ups used: NO
+Name: Opponent AI | Score: 102
+Words Found: [DESTINED, ASTRIDE, DEPENDS, DESTAIN, DESTINE, DENIED, DENIES, DENNED, DEPEND, DESPOT, DINNED, DRIEST, ESTRIN, GENIES, INDEED, TINNED]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 95
+Words Found: [REOPENED, OPENEST, PYROGEN, PENNIES, HOGTIE, REOPEN, RIOTED, YOGEES, OPENED, STRIDE, SEINED, PYRITE, POTEEN, PENNED, TRINES]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-10T12:56:14.980671
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 12
+Shake-ups used: NO
+Name: Opponent AI | Score: 75
+Words Found: [DESTINED, REOPENED, ASTRIDE, DEPENDS, DESTAIN, DESTINE, PENNIES, DENIED, DENIES, DENNED, DEPEND]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: My AI | Score: 79
+Words Found: [HYPOGENE, STANHOPE, INYOITE, HYPORIT, HYPOGEE, OPENEST, PYROGEN, PENNIED, GENETOR, DESPEND, DITTANY]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
