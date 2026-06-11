@@ -1,0 +1,13 @@
+Status: Paused
+CurrentRound: 1
+ShakeUpUsed: NO
+UsedWords: HYPOGENE
+Board:
+AIHRE
+ANYOI
+TSPGT
+TDEEZ
+RINND
+Players:
+My AI|8|HYPOGENE
+Opponent AI|0|
