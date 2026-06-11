@@ -343,3 +343,33 @@ Words Found: [HYPOGENE, STANHOPE, INYOITE, HYPORIT, HYPOGEE, OPENEST, PYROGEN, P
 Auto-passes (Wrong Words): 0
 Auto-passes (Timer): 0
 
+--- GAME SUMMARY ---
+Time: 2026-06-10T13:25:01.483854
+Winner: Player 1
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: Player 1 | Score: 9
+Words Found: [RENDERSET]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Player 2 | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
+--- GAME SUMMARY ---
+Time: 2026-06-10T13:25:46.029789
+Winner: My AI
+Reason: OPPONENT_QUIT
+Total Rounds: 1
+Shake-ups used: NO
+Name: My AI | Score: 8
+Words Found: [HYPOGENE]
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+Name: Opponent AI | Score: 0
+Words Found: []
+Auto-passes (Wrong Words): 0
+Auto-passes (Timer): 0
+
